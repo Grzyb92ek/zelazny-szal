@@ -58,3 +58,21 @@
 .shop-notice {margin:8px 0 0}
 .shop-notice:empty {margin:0}
 .shop .tile-unaffordable {cursor:pointer}
+
+.equipment-tooltip {
+  position:fixed;
+  z-index:20;
+  width:min(260px,calc(100vw - 16px));
+  max-height:calc(100vh - 16px);
+  overflow:hidden;
+  pointer-events:none;
+  padding:10px;
+  border:1px solid #6b523d;
+  border-radius:10px;
+  background:#241d18;
+  box-shadow:0 4px 14px #0009;
+  font-size:12px;
+}
+.equipment-tooltip h3 {margin:0 0 8px}
+.equipment-tooltip-item + .equipment-tooltip-item {margin-top:8px;padding-top:8px;border-top:1px solid #554434}
+.equipment-tooltip-item strong {display:block;font-size:13px}
