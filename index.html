@@ -29,9 +29,10 @@
       <section><h3 id="nextEnemy">Walka</h3><div id="nextAbility" class="small"></div><div id="nextEnemyStats" class="stats"></div><button class="btn wide" id="next">⚔️ Walcz</button></section>
       <section>
       <div class="shop-heading">
-        <div><h3>Sklep</h3><div class="small">Przelosowanie: raz na rundę, stały koszt 3 złota.</div></div>
+        <div><h3>Sklep</h3><div>Posiadane złoto: <b id="shopGold" class="gold"></b></div><div class="small">Przelosowanie: raz na rundę, stały koszt 3 złota.</div></div>
         <button class="btn" id="reroll">🔄 Przelosuj (3 złota)</button>
       </div>
+      <p id="shopNotice" class="shop-notice" role="status"></p>
       <div id="shop" class="grid shop"></div></section>
     </div>
     <div id="combat" class="hidden"><section><h3 id="battleTitle"></h3><div class="battlefield"><div class="fighter"><div class="avatar" id="playerArt"></div><strong>Barbarzyńca</strong><div class="bar"><div class="fill" id="playerBar"></div></div><span id="playerHP"></span><div class="small" id="playerDamage"></div><div class="small" id="battlePassive"></div></div><div class="fighter enemy"><div class="avatar" id="enemyArt"></div><strong id="enemyName"></strong><div class="bar"><div class="fill" id="enemyBar"></div></div><span id="enemyHP"></span><div class="small" id="enemyDamage"></div><div class="small" id="enemyAbility"></div></div></div></section><section><h3 id="outcome"></h3><div id="finalScore" class="hidden"><div class="score-big" id="scoreValue"></div><p id="scoreDetails"></p><p class="gold" id="scoreMessage"></p><button class="btn wide" id="endRanking">🏆 Ranking osobisty</button></div><div class="summary" id="report"></div><h3>Przebieg walki</h3><div class="log" id="battleText" role="log"></div><button class="btn wide hidden" id="continue">Kontynuuj</button><button class="btn wide hidden" id="retry">Spróbuj ponownie</button></section></div>

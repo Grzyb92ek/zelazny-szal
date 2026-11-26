@@ -53,3 +53,8 @@
   .game-hud div {flex-direction:column;gap:2px;padding:5px 6px}
   .game-layout .summary {grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+.shop-notice,.shop .price-unaffordable {color:#ff7777;font-weight:700}
+.shop-notice {margin:8px 0 0}
+.shop-notice:empty {margin:0}
+.shop .tile-unaffordable {cursor:pointer}
