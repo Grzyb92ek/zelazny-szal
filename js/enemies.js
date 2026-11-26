@@ -1,0 +1,5 @@
+const enemies=[
+[{name:"Nietoperz",icon:"🦇",art:"bat",hp:30,damage:5,gold:5,ability:"Wampiryzm: +10 HP co 4 własne ataki"},{name:"Henio",icon:"👺",art:"goblin",hp:30,damage:5,gold:5,ability:"Zwinność: 10% szansy na unik"}],
+[{name:"Małpa",icon:"🐒",art:"monkey",hp:45,damage:7,gold:7,ability:"15% szansy na dodatkowy atak"},{name:"Wieśniak",icon:"👨‍🌾",art:"peasant",hp:45,damage:7,gold:7,ability:"Przebicie: ignoruje 2 pancerza"}],
+[{name:"Dzik",icon:"🐗",art:"boar",hp:60,damage:9,gold:10,ability:"Szarża: pierwszy atak ×2"},{name:"BYK",icon:"🐂",art:"bull",hp:60,damage:9,gold:10,ability:"Gruba skóra: 3 pancerza",armor:3}]];
+function enemySetup(){let category=(state.round-1)%3,pool=enemies[category],e=pool[Math.floor(Math.random()*pool.length)];state.enemy={...e,category:category+1,hp:Math.floor(e.hp*(1+(state.round-1)*.22)),damage:Math.ceil(e.damage*(1+(state.round-1)*.10)),gold:e.gold+Math.floor((state.round-1)*.5)};state.enemyHp=state.enemy.hp}
