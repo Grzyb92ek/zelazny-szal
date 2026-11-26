@@ -2,7 +2,14 @@ function render(){recalc();$("playerName").textContent=state.nickname?"Gracz: "+
 $("gear").innerHTML=Object.entries(state.gear).map(([slot,it])=>'<div id="gear-'+slot+'" class="tile '+(it?.rarity==="uncommon"?"uncommon":"")+'"><div class="slot">'+slots[slot][0]+'</div><div class="pic">'+(it?it.icon:slots[slot][1])+'</div>'+(it?'<strong>'+it.name+'</strong><span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span><span>'+(it.two?(slot==="right"?"Zajęta przez broń dwuręczną":it.desc+" · Dwuręczna"):it.desc)+'</span>':'<span class="empty">Puste</span>')+'</div>').join("");
 $("cons").innerHTML=state.cons?'<div class="item">🧪 Mikstura lecząca x'+state.cons+' <button class="btn" onclick="usePotion()">Użyj (20 HP)</button></div>':"Brak";
 $("shop").innerHTML=state.offers.map((it,i)=>{let dupe=owned(it),status=slotStatus(it);return '<div class="tile"><strong>'+it.icon+' '+it.name+'</strong><div class="slot">Slot: '+slotLabel(it)+(status?' · '+status:'')+'</div>'+(!it.potion?'<span class="small">Pospolity</span>':'')+'<div>'+it.desc+'</div>'+(dupe&&dupe.rarity!=="uncommon"?'<div class="green">Ulepszenie: '+promote(it).desc+'</div>':'')+'<div class="price gold">'+it.cost+' zł</div><button class="btn" onclick="buy('+i+')" '+(dupe?.rarity==="uncommon"?"disabled":"")+'>'+(dupe?"Ulepsz":"Kup")+'</button></div>'}).join("")||"Sklep pusty";
-$("reroll").disabled=state.rerolled||state.gold<3||state.dead;$("next").disabled=state.phase!=="main";$("nextEnemy").textContent=state.enemy?"Następny przeciwnik: "+state.enemy.icon+" "+state.enemy.name+" · Kategoria "+state.enemy.category:"Walka";$("nextAbility").textContent=state.enemy?.ability||""}
+$("reroll").disabled=state.rerolled||state.gold<3||state.dead;$("next").disabled=state.phase!=="main";$("nextEnemy").textContent=state.enemy?"Następny przeciwnik: "+state.enemy.icon+" "+state.enemy.name+" · Kategoria "+state.enemy.category:"Walka";$("nextAbility").textContent=state.enemy?.ability||"";
+const enemy=state.enemy;
+$("nextEnemyStats").innerHTML=enemy?[
+  ["❤️ HP",'<span class="hp">'+enemy.hp+'</span>'],
+  ["⚔️ DMG",enemy.damage],
+  ["🛡️ Pancerz",enemy.armor??0]
+].map(([label,value])=>'<div class="stat"><b>'+label+'</b><br>'+value+'</div>').join(""):"";
+}
 function bars(){let e=state.enemy;$("playerHP").textContent=state.hp+"/"+state.max+" HP";$("playerBar").style.width=100*state.hp/state.max+"%";$("enemyHP").textContent=state.enemyHp+"/"+e.hp+" HP";$("enemyBar").style.width=100*state.enemyHp/e.hp+"%"}
 function damageFloat(id,n,crit,heal=false){const target=$(id),f=document.createElement("span");f.className="floatDamage"+(crit?" critical":"")+(heal?" heal":"");f.textContent=(heal?"+":"−")+n;target.appendChild(f);if(!heal){target.classList.remove("hit");void target.offsetWidth;target.classList.add("hit")}setTimeout(()=>{f.remove()},700)}
 function addLog(line,heading=false){let p=document.createElement("p");p.textContent=line;if(heading){p.style.color="#e3b36b";p.style.fontWeight="bold"}$("battleText").appendChild(p);$("battleText").scrollTop=$("battleText").scrollHeight}
