@@ -2,6 +2,23 @@ function itemIcon(item){
   return item.image ? '<img class="item-icon" src="assets/items/'+esc(item.image)+'" width="48" height="48" alt="">' : esc(item.icon);
 }
 
+function itemRarityBadge(item){
+  const rarity=itemRarity(item);
+  return '<span class="small rarity-label--'+rarity+'">'+itemRarityLabels[rarity]+'</span>';
+}
+
+function rareEffectDetails(item){
+  const rarity=itemRarity(item), effects=configuredSourceEffects("item",item.id,rarity);
+  const descriptions=effects.map(effect=>{
+    const extra=effectDisplayDescription(effect);
+    return '<div class="small item-effect"><b>'+esc(effect.name)+'</b>'+(extra?' — '+esc(extra):'')+'</div>';
+  });
+  if(rarity==="rare"&&item.rareEffectDescription&&!effects.some(effect=>effect.id===item.rareEffectId)){
+    descriptions.push('<div class="small rare-effect">Efekt specjalny (nieaktywny): '+esc(item.rareEffectDescription)+'</div>');
+  }
+  return descriptions.join("");
+}
+
 function renderCharacter(){
   const profile=selectedClass();
   $("characterTitle").textContent=$("playerClassName").textContent=profile.name;
@@ -12,14 +29,16 @@ function renderCharacter(){
   $("hudLevel").textContent=state.level;
   $("hudScore").textContent=scoreParts().score;
   $("playerName").textContent=state.nickname?"Gracz: "+state.nickname:"";
-  $("passiveInfo").textContent=state.passive?state.passive.name+" — "+state.passive.desc:"";
+  $("subclassTitle").textContent=selectedSubclass()?.name??"";
+  renderCharacterEffects();
+  syncSkillControls();
   $("stats").innerHTML=[
-    ["🛡️ Pancerz",state.armor],["⚔️ DMG",state.dmg],
-    ["⚡ Szybkość",state.speed.toFixed(2)],["🎯 Krytyk",state.crit+"%"],
-    ["💥 Kryt. obrażenia",state.critD+"%"],["💚 Regeneracja",state.regen+" HP"],
-    ["💚 Przywracanie zdrowia",state.healOnHit+" HP / trafienie"],
-    ["🛡️ Odbicie obrażeń",state.damageReflect+" / otrzymane trafienie"],
-    ["⚔️ Przebicie pancerza",state.armorPenetration]
+    ["🛡️ Pancerz",battleStat("player","armor")],["⚔️ DMG",battleStat("player","dmg")],
+    ["⚡ Szybkość",Math.max(.25,battleStat("player","speed")).toFixed(2)],["🎯 Krytyk",battleCriticalChance("player")+"%"],
+    ["💥 Kryt. obrażenia",battleStat("player","critD")+"%"],["💚 Regeneracja",battleStat("player","regen")+" HP"],
+    ["💚 Przywracanie zdrowia",battleStat("player","healOnHit")+" HP / trafienie"],
+    ["🛡️ Odbicie obrażeń",battleStat("player","damageReflect")+" / otrzymane trafienie"],
+    ["⚔️ Przebicie pancerza",battleStat("player","armorPenetration")]
   ].map(([label,value])=>'<div class="stat"><b>'+label+'</b><br>'+value+'</div>').join("");
   $("xpValue").textContent=state.exp+"/"+xpNeed()+" EXP";
   $("xpBar").style.width=Math.min(100,100*state.exp/xpNeed())+"%";
@@ -31,19 +50,36 @@ function renderCharacterHP(){
   $("characterHPBar").style.width=100*state.hp/state.max+"%";
 }
 function render(){recalc();renderCharacter();
-$("gear").innerHTML=Object.entries(state.gear).map(([slot,it])=>'<div id="gear-'+slot+'" class="tile '+(it?.rarity==="uncommon"?"uncommon":"")+'"><div class="slot">'+slots[slot][0]+'</div><div class="pic">'+(it?itemIcon(it):slots[slot][1])+'</div>'+(it?'<strong>'+esc(it.name)+'</strong><span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span><span>'+(it.two?(slot==="right"?"Zajęta przez broń dwuręczną":esc(itemDescription(it))+" · Dwuręczna"):esc(itemDescription(it)))+'</span>':'<span class="empty">Puste</span>')+
-  (it&&!(it.two&&slot==="right")?'<button type="button" class="btn gear-remove" onclick="unequipItem(\''+slot+'\')">Zdejmij</button>':'')+
-  '</div>').join("");
+$("gear").innerHTML=Object.entries(state.gear).map(([slot,item])=>{
+  const twoHandedRight=item?.two&&slot==="right";
+  const details=item?'<strong>'+esc(item.name)+'</strong>'+itemRarityBadge(item)+'<span>'+
+    (twoHandedRight?"Zajęta przez broń dwuręczną":esc(itemDescription(item))+(item.two?" · Dwuręczna":""))+'</span>'+
+    (twoHandedRight?"":rareEffectDetails(item)+'<button type="button" class="btn gear-remove" onclick="unequipItem(\''+slot+'\')">Zdejmij</button>'):
+    '<span class="empty">Puste</span>';
+  return '<div id="gear-'+slot+'" class="tile '+(item?itemRarity(item):"")+'"><div class="slot">'+slots[slot][0]+'</div>'+
+    '<div class="pic">'+(item?itemIcon(item):slots[slot][1])+'</div>'+details+'</div>';
+}).join("");
 renderBackpack();
 $("shopGold").textContent=state.gold+" zł";
 $("shopNotice").textContent="";
 hideEquipmentTooltip();
-$("shop").innerHTML=state.offers.map((it,i)=>{
-  const dupe=owned(it),status=slotStatus(it),unaffordable=state.gold<it.cost;
+$("shop").innerHTML=state.offers.map((item,i)=>{
+  const price=shopPrice(item),duplicate=shopUpgrade(item),status=slotStatus(item),unaffordable=state.gold<price;
+  const unavailable=itemRarity(item)==="rare"||Boolean(owned(item,"rare"));
   const buyAction=' onclick="buy('+i+')"';
-  return '<div class="tile'+(unaffordable?' tile-unaffordable':'')+'"'+(unaffordable?buyAction:'')+' data-offer="'+i+'"><strong>'+itemIcon(it)+' '+esc(it.name)+'</strong><div class="slot">Slot: '+slotLabel(it)+(status?' · '+status:'')+'</div>'+(!it.potion?'<span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span>':'')+'<div>'+esc(itemDescription(it))+'</div>'+(dupe&&dupe.rarity!=="uncommon"?'<div class="green">Ulepszenie: '+promote(it).desc+'</div>':'')+'<div class="price '+(unaffordable?'price-unaffordable':'gold')+'">'+it.cost+' zł</div><button class="btn"'+(unaffordable?'':buyAction)+(dupe?.rarity==="uncommon"?' disabled':'')+'>'+(dupe?"Ulepsz":"Kup")+'</button></div>'}).join("")||"Sklep pusty";
-$("reroll").disabled=state.rerolled||state.gold<3||state.dead;$("next").disabled=state.phase!=="main"||!state.enemy;$("nextEnemy").textContent=state.enemy?"Następny przeciwnik: "+state.enemy.icon+" "+state.enemy.name+" · Kategoria "+state.enemy.category:"Walka";$("nextAbility").textContent=state.enemy?.ability||"";
+  return '<div class="tile '+itemRarity(item)+(unaffordable?' tile-unaffordable':'')+'"'+(unaffordable&&!unavailable?buyAction:'')+
+    ' data-offer="'+i+'"><strong>'+itemIcon(item)+' '+esc(item.name)+'</strong><div class="slot">Slot: '+slotLabel(item)+
+    (status?' · '+status:'')+'</div>'+(!item.potion?itemRarityBadge(item):'')+'<div>'+esc(itemDescription(item))+'</div>'+
+    (duplicate?'<div class="green">Ulepszenie: '+esc(promote(duplicate).desc)+'</div>':'')+
+    '<div class="price '+(unaffordable?'price-unaffordable':'gold')+'">'+price+' zł</div><button class="btn"'+
+    (unaffordable?'':buyAction)+(unavailable?' disabled':'')+'>'+(duplicate?"Ulepsz":"Kup")+'</button></div>';
+}).join("")||"Sklep pusty";
+syncShopReroll();
+$("next").disabled=state.phase!=="main"||!state.enemy;$("nextEnemy").textContent=state.enemy?"Następny przeciwnik: "+state.enemy.icon+" "+state.enemy.name+" · Kategoria "+state.enemy.category:"Walka";$("nextAbility").textContent=state.enemy?.ability||"";
 const enemy=state.enemy;
+const enemyEffects=enemy?sourceEffectDescription("enemy",enemy.id):"";
+$("nextSpecialEffects").textContent=enemyEffects;
+$("nextSpecialEffects").hidden=!enemyEffects;
 $("nextEnemyStats").innerHTML=enemy?[
   ["❤️ HP",'<span class="hp">'+enemy.hp+'</span>'],
   ["⚔️ DMG",enemy.damage],
@@ -53,7 +89,22 @@ $("nextEnemyStats").innerHTML=enemy?[
   ["⚔️ Przebicie pancerza",enemyArmorPenetration(enemy)]
 ].map(([label,value])=>'<div class="stat"><b>'+label+'</b><br>'+value+'</div>').join(""):"";
 }
-function bars(){renderCharacterHP();let e=state.enemy;$("playerHP").textContent=state.hp+"/"+state.max+" HP";$("playerBar").style.width=100*state.hp/state.max+"%";$("enemyHP").textContent=state.enemyHp+"/"+e.hp+" HP";$("enemyBar").style.width=100*state.enemyHp/e.hp+"%"}
+function bars(){
+  renderCharacterHP();
+  if(battleEffects)renderCharacterEffects();
+  const enemy=state.enemy;
+  $("playerHP").textContent=state.hp+"/"+state.max+" HP";
+  $("playerBar").style.width=100*state.hp/state.max+"%";
+  $("enemyHP").textContent=state.enemyHp+"/"+enemy.hp+" HP";
+  $("enemyBar").style.width=100*state.enemyHp/enemy.hp+"%";
+  for(const side of effectSides){
+    const armor=battleStat(side,"armor"), damage=battleStat(side,"dmg");
+    $(side+"Damage").textContent="DMG "+damage+(side==="player"||armor?" · Pancerz "+armor:"");
+    const summary=effectLayerSummary(side);
+    $(side+"Effects").textContent=summary;
+    $(side+"Effects").hidden=!summary;
+  }
+}
 function damageFloat(id,n,crit,heal=false){const target=$(id),f=document.createElement("span");f.className="floatDamage"+(crit?" critical":"")+(heal?" heal":"");f.textContent=(heal?"+":"−")+n+(crit?" Crit":"");target.appendChild(f);if(!heal){target.classList.remove("hit");void target.offsetWidth;target.classList.add("hit")}setTimeout(()=>{f.remove()},700)}
 function addLog(line,heading=false){let p=document.createElement("p");p.textContent=line;if(heading){p.style.color="#e3b36b";p.style.fontWeight="bold"}$("battleText").appendChild(p);$("battleText").scrollTop=$("battleText").scrollHeight}
 function report(r){$("report").innerHTML=[["Zadane obrażenia",r.dealt],["Otrzymane obrażenia",r.received],["Trafienia",r.hits],["Trafienia krytyczne",r.crits],["Ataki przeciwnika",r.enemyHits],["Zdobyte złoto",r.reward],["Złoto z sakiewki",r.purse],["Regeneracja HP",r.healed],["Zdobyte EXP",r.exp]].map(x=>"<div>"+x[0]+"<b>"+x[1]+"</b></div>").join("")}
@@ -110,11 +161,10 @@ function bindItemTooltip(container,selector,title,readItems,enabled){
       if(!enabled()||!card.isConnected)return;
       const tooltip=$("equipmentTooltip");
       tooltip.innerHTML='<h3>'+title+'</h3>'+items.map(([slot,item])=>{
-        const uncommon=item.rarity==="uncommon";
-        return '<div class="equipment-tooltip-item"><div class="slot">'+slot+'</div>'+
+        return '<div class="equipment-tooltip-item '+itemRarity(item)+'"><div class="slot">'+slot+'</div>'+
           '<strong>'+itemIcon(item)+' '+esc(item.name)+'</strong>'+
-          '<div class="'+(uncommon?"green":"small")+'">'+(item.potion?"Użytkowy":uncommon?"Niepospolity":"Pospolity")+'</div>'+
-          '<div>'+esc(itemDescription(item))+'</div></div>';
+          '<div>'+itemRarityBadge(item)+'</div>'+
+          '<div>'+esc(itemDescription(item))+'</div>'+rareEffectDetails(item)+'</div>';
       }).join("");
       equipmentTooltipCard=card;
       card.setAttribute("aria-describedby","equipmentTooltip");

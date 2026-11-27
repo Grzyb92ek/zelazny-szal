@@ -75,8 +75,6 @@ function renderQuests() {
   $("emptyQuestLog").hidden = quests.some(quest => questState(quest) !== "available");
   $("claimQuestReward").hidden = !first || !questComplete(first);
   if (first) $("questStatus").textContent = questStatus(first);
-  $("questCompletionNotice").hidden = state.phase !== "level" ||
-    !quests.some(quest => questComplete(quest) && state.level === quest.level);
   renderExtraQuests(others, true);
   renderExtraQuests(others, false);
 }

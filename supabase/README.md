@@ -18,6 +18,8 @@ npx supabase functions deploy global-ranking --remote=adwcphvqyvemyiluixcg --use
 
 Jeśli projekt ma własną historię migracji, przed `db push` uzgodnij ją z lokalnymi plikami. Alternatywnie właściciel projektu może wykonać plik `migrations/20261127000100_global_ranking.sql` jednorazowo w SQL Editor i kontynuować od konfiguracji sekretu. Klucz bazy dostarcza środowisko funkcji. Własne sekrety przechowuj w Edge Function Secrets.
 
+Aktualizacja rankingu o podklasy wymaga migracji `20261127000200_global_ranking_subclasses.sql`, a następnie wdrożenia nowej funkcji `global-ranking`. Starsze wyniki zachowują pustą podklasę.
+
 Publiczna funkcja ma `verify_jwt = false` w konfiguracji. CORS dopuszcza także osadzone przeglądarki, które wysyłają origin `null`. Wysyłka nie wymaga rejestracji ani ciasteczek. [Wdrażanie funkcji](https://supabase.com/docs/guides/functions/deploy) · [Sekrety funkcji](https://supabase.com/docs/guides/functions/secrets).
 
 ## Testy i wydanie

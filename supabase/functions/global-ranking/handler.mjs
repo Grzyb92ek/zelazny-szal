@@ -3,7 +3,8 @@ const cors = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type"
 };
-const publicFields = "nickname,character_class,level,round,wins,score,ended_at,game_version";
+const publicFields = "nickname,character_class,character_subclass,level,round,wins,score,ended_at,game_version";
+const profileId = value=>typeof value==="string"&&/^[a-z0-9][a-z0-9_-]{0,63}$/.test(value);
 const sortOrder = "score.desc,round.desc,level.desc,run_id.asc";
 const maxBodyBytes = 2048;
 
@@ -16,12 +17,12 @@ function reply(value, status = 200, headers = {}) {
 
 export function validateScore(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) return null;
-  const {run_id, character_class, round, level, wins, uncommon, score, game_version, ended_at} = input;
+  const {run_id, character_class, character_subclass, round, level, wins, uncommon, score, game_version, ended_at} = input;
   const nickname = typeof input.nickname === "string" ? input.nickname.trim() : "";
   if (!nickname || nickname.length > 24 || /[\p{Cc}\p{Cs}\u202a-\u202e\u2066-\u2069]/u.test(nickname)) return null;
   if (typeof run_id !== "string" || !/^[\da-f]{8}(?:-[\da-f]{4}){2}-[89ab][\da-f]{3}-[\da-f]{12}$/i.test(run_id) ||
       run_id[14] !== "4") return null;
-  if (character_class !== "barbarian" ||
+  if (!profileId(character_class) || (character_subclass!=null&&!profileId(character_subclass)) ||
       typeof game_version !== "string" || !/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(game_version)) return null;
   if (![round, level, wins, uncommon, score].every(Number.isSafeInteger) ||
       round < 1 || round > 10000 || level < 1 || level > 10000 || wins !== round - 1 ||
@@ -29,7 +30,7 @@ export function validateScore(input) {
   const endedAt = typeof ended_at === "string" ? new Date(ended_at) : new Date(NaN);
   if (!Number.isFinite(endedAt.getTime()) || endedAt.toISOString() !== ended_at ||
       endedAt.getUTCFullYear() < 2000 || endedAt.getTime() > Date.now() + 300000) return null;
-  return {run_id, nickname, character_class, round, level, wins, uncommon, score, game_version, ended_at};
+  return {run_id, nickname, character_class, ...(character_subclass?{character_subclass}:{}),round, level, wins, uncommon, score, game_version, ended_at};
 }
 
 async function readScore(request) {

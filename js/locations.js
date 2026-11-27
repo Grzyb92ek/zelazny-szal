@@ -22,6 +22,7 @@ function canChangeLocation() {
 }
 
 function renderLocationLinks() {
+  syncShopReroll();
   const canNavigate = canChangeLocation();
   $("claimQuestReward").disabled = !canNavigate;
   syncInventoryAccess();

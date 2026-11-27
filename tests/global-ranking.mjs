@@ -15,9 +15,11 @@ const entry = {
 assert.deepEqual(validateScore(entry), entry);
 for (const changes of [
   {score: 651}, {score: "650"}, {wins: 6}, {level: 0}, {round: 10001},
-  {uncommon: 7}, {character_class: "other"}, {run_id: "bad"}, {game_version: "../1"},
+  {uncommon: 7}, {character_class: "../other"}, {character_subclass: "<berserk>"}, {run_id: "bad"}, {game_version: "../1"},
   {nickname: "x\ny"}, {nickname: "x".repeat(25)}, {ended_at: "2026-02-30T00:00:00.000Z"}
 ]) assert.equal(validateScore({...entry, ...changes}), null);
+const withSubclass={...entry,character_subclass:"berserk"};
+assert.deepEqual(validateScore(withSubclass),withSubclass);
 
 const endpoint = "https://test.supabase.co/functions/v1/global-ranking";
 const databaseCalls = [];
@@ -45,13 +47,14 @@ assert.equal(databaseCalls.length, 0);
 assert.equal((await handler(new Request(endpoint))).status, 200);
 assert.equal(databaseCalls[0].url.searchParams.get("limit"), "100");
 assert.equal(databaseCalls[0].url.searchParams.get("order"), "score.desc,round.desc,level.desc,run_id.asc");
-for (const code of [201, 200, 429, 503]) assert.equal((await handler(post(JSON.stringify(entry)))).status, code);
+for (const code of [201, 200, 429, 503]) assert.equal((await handler(post(JSON.stringify(withSubclass)))).status, code);
 const call = databaseCalls[1];
 assert.equal(call.url.pathname, "/rest/v1/rpc/submit_global_ranking_score");
 assert.equal(call.options.headers.Authorization, "Bearer server-test-key");
 const submitted = JSON.parse(call.options.body);
 assert.match(submitted.p_bucket, /^[a-f0-9]{64}$/);
-assert.deepEqual(submitted.p_entry, entry);
+assert.deepEqual(submitted.p_entry, withSubclass);
+assert.match(databaseCalls[0].url.searchParams.get("select"),/character_subclass/);
 
 const nodes = new Map(), saved = new Map(), events = {};
 function element() {
@@ -71,6 +74,8 @@ const storage = {
 };
 let offline = true, attempts = [];
 const context = vm.createContext({
+  rankingClassName: id=>id,
+  rankingSubclassName: id=>id==="berserk"?"Berserk":id??"—",
   $: id => {if (!nodes.has(id)) nodes.set(id, element()); return nodes.get(id)},
   document: {createElement: element},
   window: {addEventListener: (name, callback) => {events[name] = callback}},
@@ -79,13 +84,13 @@ const context = vm.createContext({
   fetch: async (_url, options) => {
     if (options.method === "POST") attempts.push(JSON.parse(options.body));
     if (offline) throw new Error("offline");
-    return options.method === "POST" ? Response.json({status: "created"}, {status: 201}) : Response.json([entry]);
+    return options.method === "POST" ? Response.json({status: "created"}, {status: 201}) : Response.json([entry,withSubclass]);
   }
 });
 const run = code => vm.runInContext(code, context);
 run(await readFile(new URL("../js/global-ranking.js", import.meta.url), "utf8"));
 await run("flushGlobalScores()");
-run('queueGlobalScore({name:"Crom", round:1, level:1, wins:0, uncommon:0, score:0})');
+run('queueGlobalScore({name:"Crom", subclassId:"berserk", round:1, level:1, wins:0, uncommon:0, score:0})');
 await run("flushGlobalScores()");
 assert.equal(saved.size, 1);
 await run("loadGlobalRanking(globalRankingView)");
@@ -95,8 +100,11 @@ await events.online();
 assert.equal(saved.size, 0);
 assert.ok(attempts.length >= 2);
 assert.ok(attempts.every(attempt => attempt.run_id === attempts[0].run_id));
+assert.equal(attempts[0].character_subclass,"berserk");
 await run("loadGlobalRanking(globalRankingView)");
 assert.equal(nodes.get("globalRankingRows").children[0].children[1].textContent, entry.nickname);
+assert.equal(nodes.get("globalRankingRows").children[0].children[3].textContent,"—");
+assert.equal(nodes.get("globalRankingRows").children[1].children[3].textContent,"Berserk");
 assert.equal(nodes.get("globalRankingTable").hidden, false);
 run("selectRankingView(false)");
 assert.equal(nodes.get("rankingPersonalPanel").hidden, false);

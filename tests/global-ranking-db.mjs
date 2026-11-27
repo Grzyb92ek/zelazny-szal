@@ -32,14 +32,19 @@ try {
     (await db.query("select public.submit_global_ranking_score($1, $2) as outcome", [bucket, entry])).rows[0].outcome;
 
   assert.equal(await submit(example), "created");
+  await db.exec("reset role");
+  await db.exec(await readFile(new URL("../supabase/migrations/20261127000200_global_ranking_subclasses.sql", import.meta.url), "utf8"));
+  await db.exec("set role service_role");
   assert.equal(await submit({...example, nickname: "new name"}), "duplicate");
   assert.equal((await db.exec(select))[0].rows[0].nickname, "Crom");
+  assert.equal((await db.exec(select))[0].rows[0].character_subclass,null);
   await assert.rejects(submit({...example, run_id: randomUUID(), score: 251}), {code: "23514"});
   assert.equal(await submit({...example, run_id: randomUUID(), nickname: "One", level: 1, uncommon: 2}), "created");
   assert.equal(await submit({...example, run_id: randomUUID(), nickname: "Two", round: 2, wins: 1, level: 4}), "created");
-  assert.equal(await submit({...example, run_id: randomUUID(), nickname: "Top", round: 4, wins: 3, score: 350}), "created");
+  assert.equal(await submit({...example, run_id: randomUUID(), nickname: "Top", character_subclass:"berserk",round: 4, wins: 3, score: 350}), "created");
   const ordered = await db.exec(select + " order by score desc, round desc, level desc, run_id asc limit 100");
   assert.deepEqual(ordered[0].rows.map(row => row.nickname), ["Top", "Crom", "One", "Two"]);
+  assert.equal(ordered[0].rows[0].character_subclass,"berserk");
 
   for (let i = 5; i < 20; i++) assert.equal(await submit(example), "duplicate");
   assert.equal(await submit({...example, run_id: randomUUID()}), "rate_limited");

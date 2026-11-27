@@ -8,12 +8,7 @@ function selectedClass() {
 }
 
 function classBase(profile) {
-  const {hp, armor, dmg, speed, crit, critD, regen, goldBonus, healOnHit=0, damageReflect=0, armorPenetration=0} = profile;
-  return {hp, armor, dmg, speed, crit, critD, regen, goldBonus, healOnHit, damageReflect, armorPenetration};
-}
-
-function classPassives(profile) {
-  return profile.passives.map(id => passives.find(passive => passive.id === id));
+  return Object.fromEntries(Object.keys(characterStatLabels).map(key=>[key,profile[key]??0]));
 }
 
 function classImage(id, image) {
@@ -26,7 +21,7 @@ function renderClassPicker() {
   $("classChoice").value = profile.id;
   $("classPicker").hidden = worldCatalog.classes.length < 2;
   $("classChoiceName").textContent = profile.name;
-  $("classDescription").textContent = profile.description;
+  $("classDescription").textContent = [profile.description,sourceEffectDescription("class",profile.id)].filter(Boolean).join(" · ");
   $("startGame").textContent = profile.id === "barbarian" && profile.name === "Barbarzyńca" ? "Wybierz barbarzyńcę" : "Wybierz " + profile.name;
   classImage("classChoiceArt", profile.image);
 }
@@ -40,18 +35,7 @@ function initClasses() {
 function startGame() {
   if (state.phase !== "select") return;
   const profile = classById($("classChoice").value);
-  Object.assign(state, classBase(profile), {classId:profile.id, max:profile.hp, gold:profile.gold, phase:"passive"});
+  Object.assign(state, classBase(profile), {classId:profile.id, max:profile.hp, gold:profile.gold, phase:"subclass"});
   $("classSelect").classList.add("hidden");
-  $("passiveIntro").textContent = profile.name + " · jedna zdolność na całą rozgrywkę";
-  $("passiveChoices").innerHTML = classPassives(profile).map((p,i) => '<button class="upgrade" onclick="pickPassive('+i+')"><b>'+p.name+'</b><span>'+p.desc+'</span></button>').join("");
-  $("passiveSelect").classList.remove("hidden");
-}
-
-function pickPassive(i) {
-  const passive = classPassives(selectedClass())[i];
-  if (state.phase !== "passive" || !passive) return;
-  state.passive=passive;
-  state.phase="main";
-  $("passiveSelect").classList.add("hidden");
-  rollShop();enemySetup();render();changeLocation("menu");
+  showSubclasses(profile);
 }

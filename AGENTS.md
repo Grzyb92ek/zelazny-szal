@@ -12,9 +12,13 @@
 ## Zasady projektowe
 
 - Każda nowa uniwersalna statystyka bojowa powinna być domyślnie dostępna dla przedmiotów, klas postaci i przeciwników oraz obsługiwana przez Game Designer Studio.
+- Wszystkie przyszłe efekty specjalne podłączaj do wspólnego systemu zdarzeń. Udostępniaj je w Game Designer Studio dla wszystkich kompatybilnych elementów gry.
+- Efekty specjalne i modyfikatory zaawansowane współdzielą mechaniki, schemat walidacji i formularz Studio. Definicje modyfikatorów zapisuj niezależnie w `data/modifiers.js`, z własnymi parametrami, licznikami i powiązaniem z elementem gry.
+- Definicje podklas, kół i punktów umiejętności zapisuj w `data/skills.js`. Gra i Studio współdzielą reguły i renderer z `js/skill-rules.js` oraz `js/skill-wheel.js`. Zachowuj moduły podklas i odblokowywania umiejętności w `js/subclasses.js` i `js/skills.js`.
+- Połączenia koła definiują wymagania węzłów. Nowe statystyki i efekty podklas oraz umiejętności podłączaj do wspólnych rejestrów, walidacji Studio i panelu efektów postaci.
 - Używaj lekkiego HTML, CSS i JavaScript bez zbędnych bibliotek. Projekt ma działać na telefonach i komputerach.
 - Docelowy podział: index.html, style.css, js/items.js, js/enemies.js, js/classes.js, js/combat.js, js/shop.js, js/progression.js, js/ranking.js, js/game.js. Unikaj zbędnego rozdrobnienia i zależności cyklicznych.
-- Ranking osobisty TOP 10: 100 pkt za wygraną walkę, 50 za awans, 25 za aktualnie wyposażony przedmiot niepospolity; broń dwuręczną licz raz. Pseudonim i ranking lokalny zapisuj bezpiecznie w localStorage.
+- Ranking osobisty TOP 10: 100 pkt za wygraną walkę, 50 za awans, 25 za aktualnie wyposażony przedmiot niepospolity lub rzadki; broń dwuręczną licz raz. Pseudonim i ranking lokalny zapisuj bezpiecznie w localStorage.
 - Nie dodawaj sekretów, tokenów ani danych prywatnych do publicznego repozytorium.
 - Wersja bazowa do migracji: PlayDrop 1.0.16. Nie nazywaj migracji ukończoną, dopóki pełny kod gry nie trafi do repozytorium i nie zostanie sprawdzony.
 

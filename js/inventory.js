@@ -1,5 +1,4 @@
 const baseBackpackCapacity = 4;
-const salePriceMultiplier = .5;
 const backpackFullMessage = "Brak miejsca w plecaku";
 const hands = ["left","right"];
 
@@ -33,14 +32,24 @@ function storeInBackpack(item,index) {
   return true;
 }
 
-function upgradeOwnedItem(item) {
-  const upgraded = promote(item);
+function replaceInventoryItem(item,replacement) {
   const slots = Object.keys(state.gear).filter(slot => state.gear[slot]===item);
-  for (const slot of slots) state.gear[slot] = upgraded;
+  for (const slot of slots) state.gear[slot] = replacement;
   if (!slots.length) {
     const index = state.backpack.findIndex(entry => entry?.item===item);
-    state.backpack[index] = {...state.backpack[index],item:upgraded};
+    if (index>=0) state.backpack[index] = replacement ? {...state.backpack[index],item:replacement} : null;
   }
+  return slots;
+}
+
+function mergeUncommonItems(id) {
+  if (!canManageInventory()) return;
+  // Equipment comes first, with two-handed weapons represented once.
+  const [keep,consume] = inventoryMatches(id,"uncommon");
+  if (!consume) return;
+  const upgraded = rareFromUncommon(keep);
+  const slots = replaceInventoryItem(keep,upgraded);
+  replaceInventoryItem(consume,null);
   return {upgraded,slots};
 }
 
@@ -50,7 +59,7 @@ function removeBackpackUnit(index,entry) {
 
 function salePrice(item) {
   const base = itemCatalog.find(candidate => candidate.id===item.id);
-  return Math.floor((base?.cost ?? item.cost)*salePriceMultiplier);
+  return Math.floor((base?.cost ?? item.cost)*shopCatalog.sellMultiplier);
 }
 
 function sellBackpackItem(index,entry) {
@@ -66,6 +75,7 @@ function useBackpackItem(index,entry) {
   if (!canUsePotion() || !entry?.item.potion || state.backpack[index]!==entry) return;
   removeBackpackUnit(index,entry);
   state.hp = num(Math.min(state.max,state.hp+entry.item.heal));
+  useConsumableEffects(entry.item);
   render();
 }
 
@@ -148,10 +158,9 @@ function renderBackpack() {
   $("backpack").innerHTML = state.backpack.map((entry,i)=>{
     if (!entry) return '<div class="tile backpack-empty" data-backpack-slot="'+i+'"><span class="small">Puste</span></div>';
     const {item,count} = entry;
-    const rarity = item.rarity==="uncommon";
-    return '<button type="button" class="tile backpack-item'+(rarity?' uncommon':'')+'" data-backpack-slot="'+i+'">'+
+    return '<button type="button" class="tile backpack-item '+itemRarity(item)+'" data-backpack-slot="'+i+'">'+
       itemIcon(item)+'<strong>'+esc(item.name)+(count>1?' ×'+count:'')+'</strong>'+
-      '<span class="'+(rarity?'green':'small')+'">'+(item.potion?'Użytkowy':rarity?'Niepospolity':'Pospolity')+'</span></button>';
+      itemRarityBadge(item)+'</button>';
   }).join("");
   syncInventoryAccess();
 }
@@ -176,6 +185,11 @@ function openInventoryMenu(card,x,y,focus = false) {
   hideEquipmentTooltip();
   inventoryMenuSelection = {index,entry,card};
   const menu = $("inventoryMenu");
+  menu.classList.toggle("rare",itemRarity(entry.item)==="rare");
+  menu.classList.toggle("uncommon",itemRarity(entry.item)==="uncommon");
+  const description = itemDescription(entry.item);
+  $("inventoryMenuItem").innerHTML = '<strong>'+esc(entry.item.name)+'</strong>'+itemRarityBadge(entry.item)+
+    (description?'<div class="small">'+esc(description)+'</div>':"")+rareEffectDetails(entry.item);
   const action = $("inventoryUse");
   action.textContent = entry.item.potion ? "Użyj" : "Ubierz";
   action.disabled = entry.item.potion && !canUsePotion();

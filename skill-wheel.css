@@ -1,0 +1,26 @@
+.skill-window {color:#f0d8b8;background:#17100f;border:3px ridge #896851;border-radius:3px;padding:14px;width:min(95vw,1060px);max-height:95vh;overflow:auto}
+.skill-window::backdrop {background:#090605dd}
+.skill-header {display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px ridge #7a4832;padding-bottom:7px}
+.skill-header h2 {font:700 clamp(20px,4vw,32px) Georgia,serif;margin:0;color:#e9c99d}
+.skill-stage {position:relative;margin:8px 0;background:radial-gradient(ellipse at 50% 48%,#492019 0%,#231615 38%,#0c0a0a 78%);border:3px ridge #625144;overflow:hidden}
+.wheel-svg {display:block;width:100%;max-height:min(65vh,720px);height:auto;aspect-ratio:1;user-select:none}
+.wheel-ring-base {fill:none;stroke:#1a0f0e;stroke-width:9}
+.wheel-ring {fill:none;stroke:#9a7158;stroke-width:2}
+.wheel-link {stroke:#5f4940;stroke-width:3;stroke-dasharray:5 4}
+.wheel-link.lit {stroke:#ffc383;stroke-dasharray:none;filter:drop-shadow(0 0 3px #ff4a17)}
+.wheel-medallion {position:relative;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;border:7px ridge #ad8165;overflow:hidden;background:radial-gradient(#961c0d,#21090a 70%);color:#f2d0a4}
+.wheel-medallion img {position:absolute;width:100%;height:145%;object-fit:cover;object-position:center top;top:0}
+.wheel-medallion strong {position:absolute;bottom:5%;text-align:center;background:#1a0d0bee;padding:4px 12px;font:700 20px Georgia,serif;border-top:1px solid #ba8761;max-width:100%;overflow-wrap:anywhere}
+.wheel-node {padding:0;margin:1px;width:52px;height:52px;display:grid;place-items:center;overflow:hidden;border:4px ridge #8c7361;border-radius:50%;font-size:22px;background:#201918;color:#cbbaa9;cursor:pointer;touch-action:none}
+.wheel-node.available {background:radial-gradient(#d92820,#5d0909 65%,#33120f);border-color:#db9974;color:#ffe4c4;box-shadow:inset 0 0 6px #ff5535}
+.wheel-node.unlocked {background:radial-gradient(#ffce72,#bd3120 70%);border-color:#ffe0a4;color:#fff2d7}
+.wheel-node:focus-visible,.wheel-node.selected {outline:2px solid #fff0af;outline-offset:-5px}
+.wheel-node img {display:block;width:100%;height:100%;object-fit:contain}
+.wheel-tooltip {position:absolute;z-index:2;width:max-content;max-width:min(290px,calc(100% - 12px));padding:9px 11px;
+  border:1px solid #d0a265;border-radius:6px;background:#201411;color:#f2ddc4;box-shadow:0 4px 16px #000b;
+  font:14px/1.4 system-ui,sans-serif;overflow-wrap:anywhere;pointer-events:none}
+.wheel-tooltip strong {display:block;color:#ffcc82;margin-bottom:3px}
+.subclass-choice img {display:block;width:100%;height:min(46vh,350px);object-fit:contain;margin-bottom:8px}
+.subclass-name {color:#f0a97e}
+#skillControls {margin-top:6px}
+#characterEffects div {margin:5px 0}
