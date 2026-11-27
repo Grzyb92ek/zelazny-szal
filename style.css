@@ -89,3 +89,40 @@
 .arena-navigation {display:flex;flex-wrap:wrap;gap:8px}
 .arena-navigation .btn {margin-top:12px}
 main[hidden] {display:none}
+
+#townTitle,#questBoardTitle {margin:0;color:#e3b36b}
+#questBoard {color:#eee}
+#questBoard::backdrop {background:rgba(10,8,7,.8)}
+#postedQuest {margin-top:12px}
+.notice-board-button {display:grid;justify-items:center;gap:8px}
+.notice-board-art {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  align-items:start;
+  gap:8px;
+  width:150px;
+  padding:12px 8px;
+  border:5px solid #51301c;
+  border-radius:4px;
+  background:repeating-linear-gradient(0deg,#765035 0 18px,#613d28 18px 20px);
+  box-shadow:inset 0 0 8px #2c1b12;
+}
+.notice-board-art span {
+  position:relative;
+  height:38px;
+  background:repeating-linear-gradient(#efd6a4 0 5px,#9b7552 5px 6px);
+  border:5px solid #efd6a4;
+  box-shadow:1px 2px 3px #392316;
+}
+.notice-board-art span::before {
+  content:"";
+  position:absolute;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:#a24f2e;
+  top:-5px;
+  left:calc(50% - 2px);
+}
+.notice-board-art span:first-child {transform:rotate(-7deg)}
+.notice-board-art span:last-child {transform:rotate(8deg);height:31px}

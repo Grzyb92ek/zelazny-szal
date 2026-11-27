@@ -7,7 +7,12 @@ const locations = {
   map: {
     screenId: "worldMap",
     focusId: "worldMapTitle",
-    exits: { arena: "enterArena", menu: "mapToMenu" }
+    exits: { arena: "enterArena", town: "enterTown", menu: "mapToMenu" }
+  },
+  town: {
+    screenId: "town",
+    focusId: "townTitle",
+    exits: { map: "townToMap" }
   },
   arena: {
     screenId: "gameScreen",
@@ -17,7 +22,7 @@ const locations = {
 };
 
 function canChangeLocation() {
-  return pending === null &&
+  return pending === null && !$("questBoard").open &&
     (state.phase === "main" || (state.phase === "result" && state.exp < xpNeed()));
 }
 
@@ -32,8 +37,9 @@ function renderLocationLinks() {
 function renderLocation() {
   const screenId = locations[state.location]?.screenId;
   const onArena = state.location === "arena";
-  $("worldMap").hidden = screenId !== "worldMap";
-  $("gameScreen").hidden = screenId !== "gameScreen";
+  for (const id of new Set(Object.values(locations).map(location => location.screenId))) {
+    $(id).hidden = id !== screenId;
+  }
   $("gameScreen").setAttribute("aria-label", onArena ? "Arena" : "Menu główne");
   $("gameHud").classList.toggle("hidden", screenId !== "gameScreen");
   $("menuPanel").hidden = state.location !== "menu";

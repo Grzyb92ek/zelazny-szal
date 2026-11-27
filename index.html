@@ -1,6 +1,6 @@
 <!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Żelazny Szał</title><link rel="stylesheet" href="style.css"></head><body>
 <header class="game-header">
-  <div class="game-brand"><h1>⚔️ ŻELAZNY SZAŁ</h1><span class="game-version">Wersja 1.3.0</span></div>
+  <div class="game-brand"><h1>⚔️ ŻELAZNY SZAŁ</h1><span class="game-version">Wersja 1.4.0</span></div>
   <dl id="gameHud" class="game-hud hidden">
     <div><dt>Runda</dt><dd id="round"></dd></div>
     <div><dt>Złoto</dt><dd id="hudGold" class="gold"></dd></div>
@@ -13,10 +13,20 @@
     <h2 id="worldMapTitle" tabindex="-1">Mapa świata</h2>
     <ul class="map-locations">
       <li><button class="btn wide" id="enterArena"><span aria-hidden="true">⚔️</span> Arena</button></li>
-      <li><button class="btn wide" disabled><span aria-hidden="true">🏙️</span> Miasto — niedostępne</button></li>
+      <li><button class="btn wide" id="enterTown"><span aria-hidden="true">🏙️</span> Miasto</button></li>
       <li><button class="btn wide" disabled><span aria-hidden="true">🏝️</span> Plaża i dżungla — niedostępne</button></li>
     </ul>
     <button class="btn" id="mapToMenu">Wróć do menu głównego</button>
+  </section>
+</main>
+<main id="town" class="world-map" hidden aria-labelledby="townTitle">
+  <section>
+    <h2 id="townTitle" tabindex="-1">Miasto</h2>
+    <button class="btn notice-board-button" id="openQuestBoard" aria-haspopup="dialog">
+      <span class="notice-board-art" aria-hidden="true"><span></span><span></span><span></span></span>
+      Tablica ogłoszeń
+    </button>
+    <button class="btn" id="townToMap">Wróć do mapy świata</button>
   </section>
 </main>
 <main id="gameScreen" class="game-layout" hidden aria-label="Menu główne" tabindex="-1">
@@ -39,6 +49,14 @@
     <section id="menuPanel" hidden aria-labelledby="menuTitle">
       <h2 id="menuTitle" tabindex="-1">Menu główne</h2>
       <button class="btn" id="openWorldMap">Mapa świata</button>
+      <h3>Quest log</h3>
+      <p id="emptyQuestLog">Brak aktualnych zadań.</p>
+      <div id="questEntry" class="item" hidden>
+        <strong id="loggedQuestTitle"></strong>
+        <div id="loggedQuestReward"></div>
+        <div id="questStatus" role="status"></div>
+        <button class="btn" id="claimQuestReward" hidden>Odbierz nagrody</button>
+      </div>
     </section>
     <div id="arenaPanel" hidden>
     <div id="main">
@@ -60,8 +78,18 @@
   </div>
   <section class="equipment-panel" aria-labelledby="equipmentTitle"><h3 id="equipmentTitle">Wyposażenie</h3><div id="gear" class="grid gear"></div><h3>Przedmioty użytkowe</h3><fieldset id="consumables" class="consumables" aria-label="Przedmioty użytkowe"><div id="cons"></div></fieldset></section>
 </main>
-<div id="nameSelect"><div class="overlay-box"><h1>Witaj, wojowniku!</h1><form id="nameForm"><label for="nickname">Podaj pseudonim gracza</label><input id="nickname" class="name-input" maxlength="24" required placeholder="Twój pseudonim" autocomplete="nickname"><button class="btn wide" type="submit">Dalej</button></form><button class="btn wide" id="startRanking">🏆 Ranking osobisty</button><p class="small" id="nameBest"></p><p class="small">Wyniki zapisywane na tym urządzeniu, w pamięci przeglądarki.</p></div></div><div id="rankingSelect" class="hidden"><div class="overlay-box"><h1>🏆 Ranking osobisty TOP 10</h1><div class="small">Najlepsze zakończone rozgrywki na tym urządzeniu</div><div id="rankingRows"></div><p class="small">100 pkt / wygrana · 50 pkt / awans · 25 pkt / wyposażony niepospolity przedmiot</p><button class="btn wide" id="closeRanking">Wróć</button></div></div><div id="classSelect" class="hidden"><div class="overlay-box"><h1>Wybierz postać</h1><div class="small">Dostępne klasy</div><div class="class-card" id="classCard" role="button" tabindex="0"><div class="pixel-portrait" id="classArt"></div><div><div class="class-name">Barbarzyńca</div><div class="small">Mocny wojownik walczący wręcz. Wysokie obrażenia i prosty styl gry.</div></div></div><button class="btn wide" id="startGame">Wybierz barbarzyńcę</button><button class="btn wide" id="changeName">Zmień pseudonim</button></div></div><div id="passiveSelect" class="hidden"><div class="overlay-box"><h1>Wybierz pasywną zdolność</h1><div class="small">Barbarzyńca · jedna zdolność na całą rozgrywkę</div><div id="passiveChoices"></div></div></div><div id="handSelect" class="hidden"><div class="overlay-box"><h3 id="handTitle"></h3><p class="small" id="handHint"></p><div id="handChoices" class="grid"></div><button class="btn wide" id="cancelHand">Anuluj</button></div></div><div id="levelSelect" class="hidden"><div class="overlay-box"><h1>⚔️ GRATULACJE!</h1><h2 id="levelTitle"></h2><p>Wybierz jedno trwałe rozwinięcie.</p><div id="levelChoices"></div></div></div><div id="upgradeNotice" class="hidden" role="status"></div>
+<div id="nameSelect"><div class="overlay-box"><h1>Witaj, wojowniku!</h1><form id="nameForm"><label for="nickname">Podaj pseudonim gracza</label><input id="nickname" class="name-input" maxlength="24" required placeholder="Twój pseudonim" autocomplete="nickname"><button class="btn wide" type="submit">Dalej</button></form><button class="btn wide" id="startRanking">🏆 Ranking osobisty</button><p class="small" id="nameBest"></p><p class="small">Wyniki zapisywane na tym urządzeniu, w pamięci przeglądarki.</p></div></div><div id="rankingSelect" class="hidden"><div class="overlay-box"><h1>🏆 Ranking osobisty TOP 10</h1><div class="small">Najlepsze zakończone rozgrywki na tym urządzeniu</div><div id="rankingRows"></div><p class="small">100 pkt / wygrana · 50 pkt / awans · 25 pkt / wyposażony niepospolity przedmiot</p><button class="btn wide" id="closeRanking">Wróć</button></div></div><div id="classSelect" class="hidden"><div class="overlay-box"><h1>Wybierz postać</h1><div class="small">Dostępne klasy</div><div class="class-card" id="classCard" role="button" tabindex="0"><div class="pixel-portrait" id="classArt"></div><div><div class="class-name">Barbarzyńca</div><div class="small">Mocny wojownik walczący wręcz. Wysokie obrażenia i prosty styl gry.</div></div></div><button class="btn wide" id="startGame">Wybierz barbarzyńcę</button><button class="btn wide" id="changeName">Zmień pseudonim</button></div></div><div id="passiveSelect" class="hidden"><div class="overlay-box"><h1>Wybierz pasywną zdolność</h1><div class="small">Barbarzyńca · jedna zdolność na całą rozgrywkę</div><div id="passiveChoices"></div></div></div><div id="handSelect" class="hidden"><div class="overlay-box"><h3 id="handTitle"></h3><p class="small" id="handHint"></p><div id="handChoices" class="grid"></div><button class="btn wide" id="cancelHand">Anuluj</button></div></div><div id="levelSelect" class="hidden"><div class="overlay-box"><h1>⚔️ GRATULACJE!</h1><h2 id="levelTitle"></h2><p>Wybierz jedno trwałe rozwinięcie.</p><p id="questCompletionNotice" class="gold" hidden>Quest ukończony</p><div id="levelChoices"></div></div></div><div id="upgradeNotice" class="hidden" role="status"></div>
 <div id="equipmentTooltip" class="equipment-tooltip hidden" role="tooltip"></div>
+<dialog id="questBoard" class="overlay-box" aria-labelledby="questBoardTitle">
+  <h2 id="questBoardTitle">Tablica ogłoszeń</h2>
+  <div id="postedQuest" class="item">
+    <strong id="postedQuestTitle"></strong>
+    <div id="postedQuestReward"></div>
+    <button class="btn" id="acceptQuest">Przyjmij zadanie</button>
+  </div>
+  <p id="emptyQuestBoard" role="status" hidden>Brak dostępnych zadań.</p>
+  <form method="dialog"><button class="btn" autofocus>Zamknij</button></form>
+</dialog>
 <!-- Classic scripts share the same scope; preserve this loading order. -->
 <script src="js/items.js"></script>
 <script src="js/enemies.js"></script>
@@ -72,6 +100,7 @@
 <script src="js/shop.js"></script>
 <script src="js/progression.js"></script>
 <script src="js/combat.js"></script>
+<script src="js/quests.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/locations.js"></script>
 <script src="js/game.js"></script></body></html>

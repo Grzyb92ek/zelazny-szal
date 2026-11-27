@@ -3,4 +3,4 @@ function retry(){if(state.phase!=="dead")return;battleToken++;state=fresh();clos
 $("classArt").innerHTML=svg("hero");$("characterArt").innerHTML=svg("hero");$("playerArt").innerHTML=svg("hero");
 $("cancelHand").onclick=closeHand;
 $("nameForm").onsubmit=e=>{e.preventDefault();confirmName()};$("changeName").onclick=showName;$("startRanking").onclick=showRanking;$("endRanking").onclick=showRanking;$("closeRanking").onclick=()=>$("rankingSelect").classList.add("hidden");
-$("reroll").onclick=reroll;$("next").onclick=fight;$("continue").onclick=nextRound;$("retry").onclick=retry;$("startGame").onclick=startGame;$("classCard").onclick=startGame;$("classCard").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();startGame()}};initLocations();showName();render();
+$("reroll").onclick=reroll;$("next").onclick=fight;$("continue").onclick=nextRound;$("retry").onclick=retry;$("startGame").onclick=startGame;$("classCard").onclick=startGame;$("classCard").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();startGame()}};initLocations();initQuests();showName();render();
