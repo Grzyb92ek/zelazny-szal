@@ -13,6 +13,7 @@ function renderCharacter(){
   $("xpValue").textContent=state.exp+"/"+xpNeed()+" EXP";
   $("xpBar").style.width=Math.min(100,100*state.exp/xpNeed())+"%";
   renderCharacterHP();
+  renderQuests();
 }
 function renderCharacterHP(){
   $("characterHP").textContent=state.hp+"/"+state.max;
