@@ -45,7 +45,7 @@
 @media(max-width:1023px) {
   body {max-width:680px;margin:auto;padding:0 12px 12px}
   .game-layout {grid-template-columns:minmax(0,1fr);grid-template-areas:"character" "center" "equipment"}
-  .game-layout:has(#main.hidden) {grid-template-areas:"center" "character" "equipment"}
+  .game-layout:has(#arenaPanel:not([hidden]) #main.hidden) {grid-template-areas:"center" "character" "equipment"}
   .game-layout .shop {grid-template-columns:repeat(2,minmax(0,1fr))}
   .game-hud {width:100%}
 }
@@ -83,8 +83,9 @@
   text-shadow:0 2px 3px #000,0 0 6px #360909;
 }
 
-.location-camp {max-width:520px;margin:24px auto;text-align:center}
-.location-camp h2 {margin:0;color:#e3b36b}
-.location-camp p {color:#c8b79f}
-#returnToCamp {margin-top:12px}
+.world-map {max-width:520px;margin:24px auto}
+#menuTitle,#worldMapTitle {margin:0;color:#e3b36b}
+.map-locations {list-style:none;padding:0;margin:0}
+.arena-navigation {display:flex;flex-wrap:wrap;gap:8px}
+.arena-navigation .btn {margin-top:12px}
 main[hidden] {display:none}

@@ -19,7 +19,7 @@ function renderCharacterHP(){
   $("characterHPBar").style.width=100*state.hp/state.max+"%";
 }
 function render(){recalc();renderCharacter();
-$("consumables").disabled=state.phase!=="main";
+$("consumables").disabled=state.location!=="arena"||state.phase!=="main";
 $("gear").innerHTML=Object.entries(state.gear).map(([slot,it])=>'<div id="gear-'+slot+'" class="tile '+(it?.rarity==="uncommon"?"uncommon":"")+'"><div class="slot">'+slots[slot][0]+'</div><div class="pic">'+(it?it.icon:slots[slot][1])+'</div>'+(it?'<strong>'+it.name+'</strong><span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span><span>'+(it.two?(slot==="right"?"Zajęta przez broń dwuręczną":it.desc+" · Dwuręczna"):it.desc)+'</span>':'<span class="empty">Puste</span>')+'</div>').join("");
 $("cons").innerHTML=state.cons?'<div class="item">🧪 Mikstura lecząca x'+state.cons+' <button class="btn" onclick="usePotion()">Użyj (20 HP)</button></div>':"Brak";
 $("shopGold").textContent=state.gold+" zł";

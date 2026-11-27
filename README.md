@@ -18,7 +18,7 @@ Uruchamianie: otwórz index.html w przeglądarce lub użyj GitHub Pages (Setting
 - js/progression.js — doświadczenie i awans.
 - js/combat.js — walka.
 - js/ui.js — renderowanie ekranów.
-- js/locations.js — dane lokacji, dostępne przejścia oraz wyświetlanie obozu i areny.
+- js/locations.js — dane lokacji, dostępne przejścia oraz wyświetlanie menu głównego, mapy świata i areny.
 - js/game.js — inicjalizacja i przechodzenie między rundami.
 
 Skrypty klasyczne współdzielą zakres globalny. Nie zmieniaj kolejności ładowania bez sprawdzenia zależności. Ranking lokalny zależy od origin przeglądarki; wyniki z PlayDrop nie przechodzą automatycznie do GitHub Pages.
