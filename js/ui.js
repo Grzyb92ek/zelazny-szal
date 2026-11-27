@@ -38,7 +38,7 @@ $("nextEnemyStats").innerHTML=enemy?[
 ].map(([label,value])=>'<div class="stat"><b>'+label+'</b><br>'+value+'</div>').join(""):"";
 }
 function bars(){renderCharacterHP();let e=state.enemy;$("playerHP").textContent=state.hp+"/"+state.max+" HP";$("playerBar").style.width=100*state.hp/state.max+"%";$("enemyHP").textContent=state.enemyHp+"/"+e.hp+" HP";$("enemyBar").style.width=100*state.enemyHp/e.hp+"%"}
-function damageFloat(id,n,crit,heal=false){const target=$(id),f=document.createElement("span");f.className="floatDamage"+(crit?" critical":"")+(heal?" heal":"");f.textContent=(heal?"+":"−")+n;target.appendChild(f);if(!heal){target.classList.remove("hit");void target.offsetWidth;target.classList.add("hit")}setTimeout(()=>{f.remove()},700)}
+function damageFloat(id,n,crit,heal=false){const target=$(id),f=document.createElement("span");f.className="floatDamage"+(crit?" critical":"")+(heal?" heal":"");f.textContent=(heal?"+":"−")+n+(crit?" Crit":"");target.appendChild(f);if(!heal){target.classList.remove("hit");void target.offsetWidth;target.classList.add("hit")}setTimeout(()=>{f.remove()},700)}
 function addLog(line,heading=false){let p=document.createElement("p");p.textContent=line;if(heading){p.style.color="#e3b36b";p.style.fontWeight="bold"}$("battleText").appendChild(p);$("battleText").scrollTop=$("battleText").scrollHeight}
 function report(r){$("report").innerHTML=[["Zadane obrażenia",r.dealt],["Otrzymane obrażenia",r.received],["Trafienia",r.hits],["Trafienia krytyczne",r.crits],["Ataki przeciwnika",r.enemyHits],["Zdobyte złoto",r.reward],["Złoto z sakiewki",r.purse],["Regeneracja HP",r.healed],["Zdobyte EXP",r.exp]].map(x=>"<div>"+x[0]+"<b>"+x[1]+"</b></div>").join("")}
 let equipmentTooltipTimer;
