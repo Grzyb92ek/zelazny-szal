@@ -147,3 +147,40 @@ main[hidden] {display:none}
 }
 .notice-board-art span:first-child {transform:rotate(-7deg)}
 .notice-board-art span:last-child {transform:rotate(8deg);height:31px}
+
+.barbarian-portrait,.barbarian-sprite::before {
+  background-image:url("assets/barbarian.webp");
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+}
+.barbarian-portrait {
+  background-size:270px 180px;
+  background-position:0 -48px;
+}
+.barbarian-sprite {
+  display:grid;
+  place-items:center;
+  width:84px;
+  height:84px;
+}
+.barbarian-sprite::before {
+  content:"";
+  width:56px;
+  height:84px;
+  background-size:154px 102.67px;
+  background-position:-44px -8px;
+  clip-path:inset(0 10px);
+}
+.is-attacking .barbarian-sprite::before {
+  animation:barbarian-swing .24s steps(1,end);
+}
+.hit .barbarian-sprite {
+  animation:hitFlash .22s ease-out;
+}
+@keyframes barbarian-swing {
+  from {background-position:-98px -8px;clip-path:inset(0)}
+  to {background-position:-44px -8px;clip-path:inset(0 10px)}
+}
+@media(prefers-reduced-motion:reduce) {
+  .is-attacking .barbarian-sprite::before,.hit .barbarian-sprite {animation:none}
+}
