@@ -24,9 +24,10 @@ function canChangeLocation() {
 function renderLocationLinks() {
   const canNavigate = canChangeLocation();
   $("claimQuestReward").disabled = !canNavigate;
+  renderExtraQuests(worldCatalog.quests.slice(1), false);
   for (const [id, location] of Object.entries(locations)) {
-    for (const buttonId of Object.values(location.exits)) {
-      $(buttonId).classList.toggle("hidden", id !== state.location || !canNavigate);
+    for (const [destination, buttonId] of Object.entries(location.exits)) {
+      $(buttonId).classList.toggle("hidden", id !== state.location || !canNavigate || !activeLocation(destination));
     }
   }
 }
@@ -37,7 +38,7 @@ function renderLocation() {
   for (const id of new Set(Object.values(locations).map(location => location.screenId))) {
     $(id).hidden = id !== screenId;
   }
-  $("gameScreen").setAttribute("aria-label", onArena ? "Przygoda" : "Menu główne");
+  $("gameScreen").setAttribute("aria-label", activeLocation(onArena ? "arena" : "menu")?.name);
   $("gameHud").classList.toggle("hidden", screenId !== "gameScreen");
   $("menuPanel").hidden = state.location !== "menu";
   $("arenaPanel").hidden = !onArena;
@@ -48,7 +49,7 @@ function renderLocation() {
 
 function changeLocation(destination) {
   const from = locations[state.location];
-  if (!canChangeLocation() || !(from ? Object.hasOwn(from.exits, destination) : destination === "menu")) return;
+  if (!canChangeLocation() || !activeLocation(destination) || !(from ? Object.hasOwn(from.exits, destination) : destination === "menu")) return;
   const location = locations[destination];
   hideEquipmentTooltip();
   state.location = destination;
@@ -58,6 +59,19 @@ function changeLocation(destination) {
 }
 
 function initLocations() {
+  for (const type of ["menu", "town", "arena"]) {
+    const definition = activeLocation(type);
+    if (!definition) continue;
+    const image = $("locationImage-" + type);
+    image.hidden = !definition.image;
+    if (definition.image) image.src = "assets/" + definition.image;
+    $("locationDescription-" + type).textContent = definition.description;
+    if (type !== "arena") $("locationTitle-" + type).textContent = (type === "menu" && definition.icon ? definition.icon + " " : "") + definition.name;
+    if (type !== "menu") {
+      $("locationLabel-" + type).textContent = definition.name;
+      $("locationIcon-" + type).textContent = definition.icon;
+    }
+  }
   for (const location of Object.values(locations)) {
     for (const [destination, buttonId] of Object.entries(location.exits)) {
       $(buttonId).onclick = () => changeLocation(destination);

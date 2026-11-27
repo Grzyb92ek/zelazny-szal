@@ -1,8 +1,12 @@
 function itemIcon(item){
-  return item.image ? '<img class="item-icon" src="assets/items/'+item.image+'" width="48" height="48" alt="">' : item.icon;
+  return item.image ? '<img class="item-icon" src="assets/items/'+esc(item.image)+'" width="48" height="48" alt="">' : esc(item.icon);
 }
 
 function renderCharacter(){
+  const profile=selectedClass();
+  $("characterTitle").textContent=$("playerClassName").textContent=profile.name;
+  classImage("characterPortrait",profile.image);
+  classImage("playerArt",profile.image);
   $("round").textContent=state.round;
   $("hudGold").textContent=state.gold;
   $("hudLevel").textContent=state.level;
@@ -12,7 +16,10 @@ function renderCharacter(){
   $("stats").innerHTML=[
     ["🛡️ Pancerz",state.armor],["⚔️ DMG",state.dmg],
     ["⚡ Szybkość",state.speed.toFixed(2)],["🎯 Krytyk",state.crit+"%"],
-    ["💥 Kryt. obrażenia",state.critD+"%"],["💚 Regeneracja",state.regen+" HP"]
+    ["💥 Kryt. obrażenia",state.critD+"%"],["💚 Regeneracja",state.regen+" HP"],
+    ["💚 Przywracanie zdrowia",state.healOnHit+" HP / trafienie"],
+    ["🛡️ Odbicie obrażeń",state.damageReflect+" / otrzymane trafienie"],
+    ["⚔️ Przebicie pancerza",state.armorPenetration]
   ].map(([label,value])=>'<div class="stat"><b>'+label+'</b><br>'+value+'</div>').join("");
   $("xpValue").textContent=state.exp+"/"+xpNeed()+" EXP";
   $("xpBar").style.width=Math.min(100,100*state.exp/xpNeed())+"%";
@@ -25,21 +32,24 @@ function renderCharacterHP(){
 }
 function render(){recalc();renderCharacter();
 $("consumables").disabled=state.location!=="arena"||state.phase!=="main";
-$("gear").innerHTML=Object.entries(state.gear).map(([slot,it])=>'<div id="gear-'+slot+'" class="tile '+(it?.rarity==="uncommon"?"uncommon":"")+'"><div class="slot">'+slots[slot][0]+'</div><div class="pic">'+(it?itemIcon(it):slots[slot][1])+'</div>'+(it?'<strong>'+it.name+'</strong><span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span><span>'+(it.two?(slot==="right"?"Zajęta przez broń dwuręczną":it.desc+" · Dwuręczna"):it.desc)+'</span>':'<span class="empty">Puste</span>')+'</div>').join("");
-$("cons").innerHTML=state.cons?'<div class="item">'+itemIcon(healthPotion)+' '+healthPotion.name+' x'+state.cons+' <button class="btn" onclick="usePotion()">Użyj (20 HP)</button></div>':"Brak";
+$("gear").innerHTML=Object.entries(state.gear).map(([slot,it])=>'<div id="gear-'+slot+'" class="tile '+(it?.rarity==="uncommon"?"uncommon":"")+'"><div class="slot">'+slots[slot][0]+'</div><div class="pic">'+(it?itemIcon(it):slots[slot][1])+'</div>'+(it?'<strong>'+esc(it.name)+'</strong><span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span><span>'+(it.two?(slot==="right"?"Zajęta przez broń dwuręczną":esc(itemDescription(it))+" · Dwuręczna"):esc(itemDescription(it)))+'</span>':'<span class="empty">Puste</span>')+'</div>').join("");
+$("cons").innerHTML=state.cons?'<div class="item">'+itemIcon(healthPotion)+' '+esc(healthPotion.name)+' x'+state.cons+' <button class="btn" onclick="usePotion()">Użyj ('+healthPotion.heal+' HP)</button></div>':"Brak";
 $("shopGold").textContent=state.gold+" zł";
 $("shopNotice").textContent="";
 hideEquipmentTooltip();
 $("shop").innerHTML=state.offers.map((it,i)=>{
   const dupe=owned(it),status=slotStatus(it),unaffordable=state.gold<it.cost;
   const buyAction=' onclick="buy('+i+')"';
-  return '<div class="tile'+(unaffordable?' tile-unaffordable':'')+'"'+(unaffordable?buyAction:'')+' data-offer="'+i+'"><strong>'+itemIcon(it)+' '+it.name+'</strong><div class="slot">Slot: '+slotLabel(it)+(status?' · '+status:'')+'</div>'+(!it.potion?'<span class="small">Pospolity</span>':'')+'<div>'+it.desc+'</div>'+(dupe&&dupe.rarity!=="uncommon"?'<div class="green">Ulepszenie: '+promote(it).desc+'</div>':'')+'<div class="price '+(unaffordable?'price-unaffordable':'gold')+'">'+it.cost+' zł</div><button class="btn"'+(unaffordable?'':buyAction)+(dupe?.rarity==="uncommon"?' disabled':'')+'>'+(dupe?"Ulepsz":"Kup")+'</button></div>'}).join("")||"Sklep pusty";
-$("reroll").disabled=state.rerolled||state.gold<3||state.dead;$("next").disabled=state.phase!=="main";$("nextEnemy").textContent=state.enemy?"Następny przeciwnik: "+state.enemy.icon+" "+state.enemy.name+" · Kategoria "+state.enemy.category:"Walka";$("nextAbility").textContent=state.enemy?.ability||"";
+  return '<div class="tile'+(unaffordable?' tile-unaffordable':'')+'"'+(unaffordable?buyAction:'')+' data-offer="'+i+'"><strong>'+itemIcon(it)+' '+esc(it.name)+'</strong><div class="slot">Slot: '+slotLabel(it)+(status?' · '+status:'')+'</div>'+(!it.potion?'<span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span>':'')+'<div>'+esc(itemDescription(it))+'</div>'+(dupe&&dupe.rarity!=="uncommon"?'<div class="green">Ulepszenie: '+promote(it).desc+'</div>':'')+'<div class="price '+(unaffordable?'price-unaffordable':'gold')+'">'+it.cost+' zł</div><button class="btn"'+(unaffordable?'':buyAction)+(dupe?.rarity==="uncommon"?' disabled':'')+'>'+(dupe?"Ulepsz":"Kup")+'</button></div>'}).join("")||"Sklep pusty";
+$("reroll").disabled=state.rerolled||state.gold<3||state.dead;$("next").disabled=state.phase!=="main"||!state.enemy;$("nextEnemy").textContent=state.enemy?"Następny przeciwnik: "+state.enemy.icon+" "+state.enemy.name+" · Kategoria "+state.enemy.category:"Walka";$("nextAbility").textContent=state.enemy?.ability||"";
 const enemy=state.enemy;
 $("nextEnemyStats").innerHTML=enemy?[
   ["❤️ HP",'<span class="hp">'+enemy.hp+'</span>'],
   ["⚔️ DMG",enemy.damage],
-  ["🛡️ Pancerz",enemy.armor??0]
+  ["🛡️ Pancerz",enemy.armor??0],
+  ["💚 Przywracanie zdrowia",(enemy.healOnHit??0)+" HP / trafienie"],
+  ["🛡️ Odbicie obrażeń",(enemy.damageReflect??0)+" / otrzymane trafienie"],
+  ["⚔️ Przebicie pancerza",enemyArmorPenetration(enemy)]
 ].map(([label,value])=>'<div class="stat"><b>'+label+'</b><br>'+value+'</div>').join(""):"";
 }
 function bars(){renderCharacterHP();let e=state.enemy;$("playerHP").textContent=state.hp+"/"+state.max+" HP";$("playerBar").style.width=100*state.hp/state.max+"%";$("enemyHP").textContent=state.enemyHp+"/"+e.hp+" HP";$("enemyBar").style.width=100*state.enemyHp/e.hp+"%"}
@@ -100,9 +110,9 @@ $("shop").onpointerover=event=>{
     tooltip.innerHTML='<h3>Aktualnie wyposażony</h3>'+equippedItems.map(([slot,item])=>{
       const uncommon=item.rarity==="uncommon";
       return '<div class="equipment-tooltip-item"><div class="slot">'+slot+'</div>'+
-        '<strong>'+itemIcon(item)+' '+item.name+'</strong>'+
+        '<strong>'+itemIcon(item)+' '+esc(item.name)+'</strong>'+
         '<div class="'+(uncommon?"green":"small")+'">'+(uncommon?"Niepospolity":"Pospolity")+'</div>'+
-        '<div>'+item.desc+'</div></div>';
+        '<div>'+esc(itemDescription(item))+'</div></div>';
     }).join("");
     equipmentTooltipCard=card;
     card.setAttribute("aria-describedby","equipmentTooltip");

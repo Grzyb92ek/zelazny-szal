@@ -1,11 +1,26 @@
 # Żelazny Szał — instrukcje dla Codex
 
-- Rozwijaj zawsze najnowszy kod z repozytorium. Nie odtwarzaj całej gry przy małych aktualizacjach.
-- Zmieniaj wyłącznie elementy wskazane przez twórcę. Zachowuj interfejs, grafikę, balans i mechaniki poza zakresem zadania.
+## Praca i wykorzystanie zasobów
+
+- Domyślnie pracuj lokalnie na aktualnym kodzie projektu.
+- Ogranicz analizę do plików związanych z zadaniem oraz ich niezbędnych zależności i testów. Przy drobnych zmianach pomiń pełny audyt repozytorium.
+- Wprowadzaj minimalne zmiany potrzebne do wykonania zadania. Nie odtwarzaj całej gry przy małych aktualizacjach i nie wykonuj niezamówionego refaktoringu.
+- Zachowuj interfejs, grafikę i balans poza zakresem zadania. Istniejące mechaniki zmieniaj wyłącznie na polecenie użytkownika.
+- Wykonuj testy adekwatne do zakresu zmian. Przy małych zadaniach pomiń rozbudowane plany i dokumentację.
+- Po wykonaniu zadania krótko podsumuj zmiany, wynik testów i ewentualne problemy.
+
+## Zasady projektowe
+
+- Każda nowa uniwersalna statystyka bojowa powinna być domyślnie dostępna dla przedmiotów, klas postaci i przeciwników oraz obsługiwana przez Game Designer Studio.
 - Używaj lekkiego HTML, CSS i JavaScript bez zbędnych bibliotek. Projekt ma działać na telefonach i komputerach.
 - Docelowy podział: index.html, style.css, js/items.js, js/enemies.js, js/classes.js, js/combat.js, js/shop.js, js/progression.js, js/ranking.js, js/game.js. Unikaj zbędnego rozdrobnienia i zależności cyklicznych.
-- Przed zmianą przeczytaj tylko potrzebne pliki i powiązane testy. Po zmianie sprawdź regresje, opisz zmiany i zwiększ wersję przy wydaniu.
 - Ranking osobisty TOP 10: 100 pkt za wygraną walkę, 50 za awans, 25 za aktualnie wyposażony przedmiot niepospolity; broń dwuręczną licz raz. Pseudonim i ranking lokalny zapisuj bezpiecznie w localStorage.
-- GitHub jest docelowym źródłem kodu; GitHub Pages ma publikować gałąź main. Publikuj kolejne wydania również na PlayDrop, zachowując istniejącą grę 80949 i jej adres https://www.playdrop.ai/@grzyb92ek/iron-fury-autobattler. Jeżeli publikacja jest niedostępna, wyraźnie to zgłoś.
 - Nie dodawaj sekretów, tokenów ani danych prywatnych do publicznego repozytorium.
 - Wersja bazowa do migracji: PlayDrop 1.0.16. Nie nazywaj migracji ukończoną, dopóki pełny kod gry nie trafi do repozytorium i nie zostanie sprawdzony.
+
+## Wersjonowanie i publikacja
+
+- Zachowuj numer wersji przy drobnych zmianach. Zwiększaj go przy uzgodnionym wydaniu lub na polecenie użytkownika.
+- GitHub jest docelowym źródłem kodu. Wysyłaj zmiany do GitHuba wyłącznie na wyraźne polecenie użytkownika.
+- Publikuj grę wyłącznie na wyraźne polecenie użytkownika i tylko na wskazanej platformie. Pamiętaj, że wysłanie zmian do gałęzi `main` może uruchomić publikację w GitHub Pages.
+- Przy zleconej aktualizacji PlayDrop zachowaj istniejącą grę 80949 i jej adres https://www.playdrop.ai/@grzyb92ek/iron-fury-autobattler. Jeśli zleconej publikacji nie da się wykonać, zgłoś problem.

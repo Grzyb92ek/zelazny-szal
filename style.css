@@ -101,7 +101,7 @@
   background:#342c25;
   border:1px solid #8e4c25;
 }
-.location-card span {font-size:22px}
+.location-card span[aria-hidden="true"] {font-size:22px}
 .location-card small {font-size:12px}
 .location-card:enabled:hover {border-color:#e0a34c}
 @media(max-width:480px) {
@@ -217,3 +217,9 @@ main[hidden] {display:none}
 .global-ranking th:nth-child(n) {width:auto}
 .global-ranking td:last-child {color:inherit;font-weight:normal}
 .global-ranking td:nth-child(7) {color:#ffcf5a;font-weight:bold}
+
+.barbarian-portrait.has-class-image,#playerArt.has-class-image .barbarian-sprite::before {background-image:var(--class-image);background-size:contain;background-position:center;clip-path:none}
+#playerArt.has-class-image .barbarian-sprite::before {width:84px;height:84px;animation:none}
+
+.location-visual {max-width:100%;max-height:160px;object-fit:contain;image-rendering:pixelated}
+[id^="locationDescription-"]:empty {display:none}

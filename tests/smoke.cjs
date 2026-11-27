@@ -1,7 +1,7 @@
 const fs=require("node:fs"),path=require("node:path");const root=path.resolve(__dirname,"..");const html=fs.readFileSync(path.join(root,"index.html"),"utf8");const scripts=[...html.matchAll(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g)].map(m=>fs.readFileSync(path.join(root,m[1]),"utf8")).join("\n");
 const assertFile=require("node:assert/strict");
 const icons=fs.readdirSync(path.join(root,"assets/items")).filter(name=>name.endsWith(".png"));
-assertFile.equal(icons.length,36);
+assertFile.equal(icons.length,37);
 for(const icon of icons){
   const data=fs.readFileSync(path.join(root,"assets/items",icon));
   assertFile.equal(data.toString("ascii",1,4),"PNG");
@@ -14,7 +14,107 @@ const doc={getElementById:node,createElement:()=>({style:{},setAttribute(name,va
 
 const test=new Function("document","window","setTimeout","clearTimeout","localStorage","icons",scripts+"\n"+`\nreturn (async()=>{
 function assert(v,m){if(!v)throw Error(m)}
-assert(state.phase==="name"&&baseItems.length===18&&enemies.flat().length===6,"initial");
+assert(state.phase==="name"&&baseItems.length===itemCatalog.length-1&&enemies.flat().length===6,"initial");
+assert(state.healOnHit===0,"default heal on hit without equipment");
+const beforeHitTests=state;
+state=fresh();
+const weapon={...baseItems.find(item=>item.two),healOnHit:2.5,damageReflect:0,armorPenetration:0};
+const armor={...baseItems.find(item=>item.slot==="armor"),healOnHit:1.5,damageReflect:0,armorPenetration:0};
+state.gear.left=state.gear.right=weapon;
+state.gear.armor=armor;
+state.offers=[weapon];
+render();
+assert(state.healOnHit===4&&$("stats").innerHTML.includes("4 HP / trafienie"),"sum healing bonuses and count two-handed item once");
+assert($("gear").innerHTML.includes("+2.5 HP przy trafieniu")&&$("shop").innerHTML.includes("+2.5 HP przy trafieniu"),"configured healing appears in descriptions");
+assert(itemDescription({...weapon,desc:"+5 obrażeń, +1 HP przy trafieniu"})==="+5 obrażeń, +2.5 HP przy trafieniu","description follows the current healing value");
+assert(promote(weapon).healOnHit===3.75&&promote(weapon).desc.includes("+3.75 HP przy trafieniu"),"upgrade scales healing");
+state.enemy={name:"Cel",hp:100,armor:0,skill:"none"};
+state.enemyHp=100;
+state.hp=90;
+const hitReport=battleReport();
+playerStrike(hitReport,()=>.99);
+assert(state.hp===94&&hitReport.hits===1&&hitReport.crits===0,"normal hit heals");
+playerStrike(hitReport,()=>0);
+assert(state.hp===98&&hitReport.hits===2&&hitReport.crits===1,"additional critical hit heals once");
+state.enemy.skill="dodge";
+state.enemy.power=100;
+playerStrike(hitReport,()=>0);
+assert(state.hp===98&&hitReport.hits===2,"dodge does not heal");
+state.enemy.skill="none";
+state.enemyHp=1;
+state.hp=state.max-2;
+playerStrike(hitReport,()=>.99);
+assert(state.enemyHp===0&&state.hp===state.max&&hitReport.hits===3,"killing hit heals up to max HP");
+state.enemyHp=100;
+state.hp=state.max-6;
+state.passive=passives.find(passive=>passive.id==="bloodlust");
+playerStrike(hitReport,()=>0);
+assert(state.hp===state.max,"critical healing stacks with Bloodlust and stays capped");
+state=beforeHitTests;
+assert(state.damageReflect===0,"default reflection without equipment");
+const beforeReflectTests=state;
+state=fresh();
+state.gear.left=state.gear.right={...weapon,damageReflect:2.5};
+state.gear.armor={...armor,damageReflect:1.5};
+state.offers=[state.gear.left];
+render();
+assert(state.damageReflect===4&&$("stats").innerHTML.includes("4 / otrzymane trafienie"),"sum reflection and count a two-handed item once");
+assert($("gear").innerHTML.includes("+2.5 obrażeń odbitych")&&$("shop").innerHTML.includes("+2.5 obrażeń odbitych"),"reflection in equipment and store");
+assert(promote(state.gear.left).damageReflect===3.75&&promote(state.gear.left).desc.includes("+3.75 obrażeń odbitych"),"upgrade scales reflection");
+state.enemy={name:"Cel",hp:40,damage:9,armor:100,skill:"none"};
+state.enemyHp=40;
+state.hp=90;
+const reflectReport=battleReport();
+const reflectLog=[];
+const originalLog=addLog;
+addLog=line=>reflectLog.push(line);
+try {
+  applyEnemyHit(reflectReport,0);
+  assert(state.hp===90&&state.enemyHp===40&&reflectReport.enemyHits===0&&reflectLog.length===0,"resolved dodge does not reflect");
+  enemyStrike(reflectReport);
+  assert(state.enemyHp===36&&state.hp<90&&reflectReport.dealt===4&&reflectReport.enemyHits===1,"enemy hit reflects a flat value ignoring armor");
+  const beforeCritical=state.hp;
+  applyEnemyHit(reflectReport,15,true);
+  assert(state.enemyHp===32&&state.hp===beforeCritical-15&&reflectReport.dealt===8&&reflectReport.enemyHits===2,"additional critical hit reflects once with the same value");
+  assert(reflectReport.hits===0&&reflectReport.crits===0&&reflectLog.filter(line=>line==="Odbicie obrażeń: 4 obrażeń").length===2,"reflection itself never counts as a hit or crit and appears in the log");
+} finally {
+  addLog=originalLog;
+  state=beforeReflectTests;
+}
+assert(state.armorPenetration===0,"default penetration without equipment");
+assert(attackDamage(10,3,0,100)===7&&attackDamage(10,3,3,100)===10&&attackDamage(10,3,100,100)===10,"penetration cancels armor without adding damage");
+assert(attackDamage(2,10,0,100)===1&&attackDamage(10,3,3,1)===1,"minimum damage and remaining HP caps");
+assert(enemyArmorPenetration({skill:"pierce",power:2})===2&&enemyArmorPenetration({skill:"pierce",power:2,armorPenetration:3})===3,"legacy penetration is used once");
+const modifierClass={...classById(),id:"test-combat-modifiers",healOnHit:1,damageReflect:2,armorPenetration:2};
+worldCatalog.classes.push(modifierClass);
+state=fresh();
+try {
+  state.classId=modifierClass.id;
+  state.gear.left=state.gear.right={...weapon,healOnHit:2,damageReflect:2,armorPenetration:2};
+  state.gear.armor={...armor,healOnHit:1,damageReflect:1,armorPenetration:1};
+  state.enemy={name:"Cel",hp:40,damage:10,armor:3,skill:"none",healOnHit:6,damageReflect:3,armorPenetration:2};
+  render();
+  assert(state.healOnHit===4&&state.damageReflect===5&&state.armorPenetration===5,"class and equipment modifiers sum without counting both weapon slots");
+  assert($("nextEnemyStats").innerHTML.includes("Odbicie obrażeń")&&$("nextEnemyStats").innerHTML.includes("6 HP / trafienie"),"enemy preview shows combat modifiers");
+  const upgraded=promote(state.gear.left);
+  assert(upgraded.armorPenetration===3&&upgraded.desc.includes("+3 przebicia pancerza"),"penetration upgrade and description");
+  Object.assign(state,{dmg:10,hp:70,armor:5,enemyHp:40});
+  const report=battleReport();
+  playerStrike(report,()=>.99);
+  assert(state.hp===71&&state.enemyHp===30&&report.dealt===10&&report.received===3,"player penetration and healing, enemy reflection without recursion");
+  enemyStrike(report);
+  assert(state.hp===64&&state.enemyHp===31&&report.dealt===15&&report.received===10&&report.hits===1&&report.enemyHits===1,"enemy penetration and healing, player reflection without recursion");
+  state.enemy.skill="dodge";state.enemy.power=100;
+  playerStrike(report,()=>0);
+  applyEnemyHit(report,0);
+  assert(state.hp===64&&state.enemyHp===31&&report.hits===1&&report.enemyHits===1,"dodges do not trigger healing or reflection");
+  state.enemy.skill="none";state.enemyHp=39;
+  applyEnemyHit(report,7,true);
+  assert(state.enemyHp===35&&state.hp===57&&report.enemyHits===2,"enemy healing is capped before reflection even on a critical hit");
+} finally {
+  worldCatalog.classes.pop();
+  state=beforeReflectTests;
+}
 $("nickname").value="Crom";confirmName();startGame();pickPassive(0);
 assert(state.phase==="main"&&state.hp===120&&state.gold===20,"start");
 const visible=id=>!$(id).hidden&&!$(id).classList.contains("hidden");
@@ -24,13 +124,13 @@ assert(!visible("questEntry")&&visible("emptyQuestLog")&&$("questLog").parentNod
 $("enterTown").onclick();
 assert(state.location==="town"&&visible("town")&&!visible("gameScreen")&&!visible("gameHud"),"enter town directly from menu");
 $("acceptQuest").onclick();
-assert(state.levelQuest==="available","acceptance requires an open board");
+assert(questState(worldCatalog.quests[0])==="available","acceptance requires an open board");
 $("openQuestBoard").onclick();
 assert($("questBoard").open&&visible("postedQuest")&&$("postedQuestReward").textContent==="Nagroda: 10 złota","open available quest");
 $("townToMenu").onclick();
 assert(state.location==="town","board blocks location navigation");
 $("acceptQuest").onclick();
-assert(!$("questBoard").open&&state.levelQuest==="accepted"&&visible("emptyQuestBoard"),"accept quest once");
+assert(!$("questBoard").open&&questState(worldCatalog.quests[0])==="accepted"&&visible("emptyQuestBoard"),"accept quest once");
 $("townToMenu").onclick();
 assert(state.location==="menu"&&visible("menuPanel"),"return directly from town");
 assert(visible("questEntry")&&$("questStatus").textContent==="W trakcie"&&!visible("claimQuestReward"),"accepted quest appears in log");
@@ -42,7 +142,7 @@ assert(state.location==="arena"&&visible("arenaPanel")&&!visible("menuPanel")&&v
 assert(visible("arenaToMenu"),"show adventure return button");
 const axe=baseItems[0], dagger=baseItems[1];
 const itemImages=[...baseItems,healthPotion].map(item=>item.image);
-assert(new Set(itemImages).size===19&&itemImages.every(image=>icons.includes(image)),"all 19 items have distinct PNG files");
+assert(new Set(itemCatalog.map(item=>item.id)).size===itemCatalog.length&&itemImages.every(image=>!image||icons.includes(image)),"catalog entries have unique IDs and reference available PNG files");
 assert(itemIcon(dagger).includes("assets/items/dagger.png"),"render the new dagger graphic");
 assert(itemIcon({icon:"🗡️"})==="🗡️","keep emoji fallback for items without a PNG");
 assert(itemIcon(axe).includes("assets/items/iron_axe.png"),"render matched item as PNG");
@@ -75,7 +175,7 @@ $("openQuestBoard").onclick();
 assert($("questBoard").open&&!visible("postedQuest"),"accepted quest stays unavailable on revisiting town");
 $("questBoard").close();
 $("townToMenu").onclick();
-assert(state.levelQuest==="accepted"&&visible("questEntry"),"quest survives town and menu navigation");
+assert(questState(worldCatalog.quests[0])==="accepted"&&visible("questEntry"),"quest survives town and menu navigation");
 $("enterAdventure").onclick();
 reroll();
 assert(state.offers===offersBeforeTravel&&state.enemy===enemyBeforeTravel&&state.gear===gearBeforeTravel&&state.rerolled&&$("reroll").disabled,"keep arena objects and reroll limit");
@@ -144,8 +244,26 @@ state.wins=15;state.round=16;state.level=5;
 const queuedScores=[];
 queueGlobalScore=entry=>queuedScores.push(entry);
 state.phase="dead";finishScore();finishScore();assert(getRanks().length===1&&getRanks()[0].score===1825,"save once");
-assert(queuedScores.length===1&&queuedScores[0].score===1825&&queuedScores[0].uncommon===5,"submit the same score automatically once");retry();assert(state.phase==="name"&&$("nickname").value==="Crom"&&!state.location&&!visible("gameScreen")&&!visible("town")&&state.levelQuest==="available"&&visible("emptyQuestLog"),"retry");
+assert(queuedScores.length===1&&queuedScores[0].score===1825&&queuedScores[0].uncommon===5,"submit the same score automatically once");retry();assert(state.phase==="name"&&$("nickname").value==="Crom"&&!state.location&&!visible("gameScreen")&&!visible("town")&&questState(worldCatalog.quests[0])==="available"&&visible("emptyQuestLog"),"retry");
 $("nickname").value="<img>";confirmName();state.phase="dead";state.wins=1;finishScore();showRanking();assert($("rankingRows").innerHTML.includes("&lt;img&gt;"),"escape");
-return "PASS: initial, shop, cumulative speed, purse, score, ranking, retry, location transitions, guards and quest rewards";
+const originalFinishScore=finishScore;
+finishScore=()=>{};
+try {
+  for(const hp of [20,5]){
+    state=fresh();
+    Object.assign(state,{phase:"main",location:"arena",speed:.25,hp,regen:0,damageReflect:4,
+      enemy:{name:"Cel",hp:3,damage:5,armor:100,art:"monkey",skill:"extra",power:100,gold:7,category:2},enemyHp:3});
+    await fight();
+    assert(state.enemyHp===0&&$("report").innerHTML.includes("Ataki przeciwnika<b>1"),"lethal reflection stops extra attacks");
+    if(hp===5)assert(state.hp===0&&state.dead&&state.phase==="dead"&&state.wins===0&&state.gold===20&&state.exp===0,"simultaneous death is a defeat without rewards");
+    else assert(state.hp===15&&state.phase==="result"&&state.wins===1&&state.gold===27,"lethal reflection wins if the player is alive");
+  }
+  state=fresh();
+  Object.assign(state,{phase:"main",location:"arena",speed:2,hp:3,dmg:10,
+    enemy:{name:"Cel",hp:2,damage:5,armor:0,art:"monkey",skill:"extra",power:100,gold:7,category:2,damageReflect:8},enemyHp:2});
+  await fight();
+  assert(state.hp===0&&state.enemyHp===0&&state.dead&&state.wins===0,"enemy reflection on a killing blow also gives defeat priority");
+} finally {finishScore=originalFinishScore}
+return "PASS: initial, shop, cumulative speed, symmetric combat modifiers, purse, score, ranking, retry, location transitions, guards and quest rewards";
 })();
 `);test(doc,{scrollTo(){}},callback=>{queueMicrotask(callback);return 0},()=>{},storage,icons).then(console.log).catch(error=>{console.error(error);process.exitCode=1});
