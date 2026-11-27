@@ -1,4 +1,12 @@
 const fs=require("node:fs"),path=require("node:path");const root=path.resolve(__dirname,"..");const html=fs.readFileSync(path.join(root,"index.html"),"utf8");const scripts=[...html.matchAll(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g)].map(m=>fs.readFileSync(path.join(root,m[1]),"utf8")).join("\n");
+const assertFile=require("node:assert/strict");
+const icons=fs.readdirSync(path.join(root,"assets/items")).filter(name=>name.endsWith(".png"));
+assertFile.equal(icons.length,24);
+for(const icon of icons){
+  const data=fs.readFileSync(path.join(root,"assets/items",icon));
+  assertFile.equal(data.toString("ascii",1,4),"PNG");
+  assertFile.equal(data[25],6,"RGBA icon "+icon);
+}
 const nodes=new Map(),mem=new Map();
 const node=id=>{if(!nodes.has(id)){const classes=new Set();nodes.set(id,{innerHTML:"",textContent:"",value:"",style:{},classList:{add:name=>classes.add(name),remove:name=>classes.delete(name),contains:name=>classes.has(name),toggle:(name,force)=>force?classes.add(name):classes.delete(name)},appendChild(){},replaceChildren(...children){this.children=children},remove(){},setAttribute(name,value){this[name]=value},showModal(){this.open=true},close(){this.open=false},focus(){}})}return nodes.get(id)};
 const storage={getItem:k=>mem.has(k)?mem.get(k):null,setItem:(k,v)=>mem.set(k,v)};
@@ -32,6 +40,18 @@ assert(state.gold===goldAtAcceptance,"cannot claim before reaching level three")
 $("enterAdventure").onclick();
 assert(state.location==="arena"&&visible("arenaPanel")&&!visible("menuPanel")&&visible("gameHud")&&!$("consumables").disabled&&$("gameScreen")["aria-label"]==="Przygoda","enter adventure directly");
 assert(visible("arenaToMenu"),"show adventure return button");
+const axe=baseItems[0], dagger=baseItems[1];
+assert(itemIcon(dagger)===dagger.icon,"keep emoji when no matching graphic");
+assert(itemIcon(axe).includes("assets/items/iron_axe.png"),"render matched item as PNG");
+assert(itemIcon(promote(axe))===itemIcon(axe),"upgrading preserves item graphic");
+state.offers=[axe,{...healthPotion}];
+render();
+assert($("shop").innerHTML.includes("iron_axe.png")&&$("shop").innerHTML.includes("health_potion.png"),"show item and potion graphics in shop");
+buy(0);
+buy(0);
+assert($("gear").innerHTML.includes("iron_axe.png")&&$("cons").innerHTML.includes("health_potion.png"),"show item and potion graphics in inventory");
+state.gear.left=null;
+state.cons=0;
 state.hp=91;
 state.exp=50;
 state.gold=100;
