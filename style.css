@@ -206,3 +206,14 @@ main[hidden] {display:none}
 }
 
 .game-layout #arenaQuestLog {margin-top:12px}
+
+#rankingBox {max-width:820px}
+.ranking-tabs {display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ranking-tabs [aria-pressed="false"] {background:#342c25}
+.ranking-tabs [aria-pressed="true"] {outline:1px solid #e3b36b}
+.ranking-scroll {overflow-x:auto}
+.ranking-scroll:has([hidden]) {display:none}
+.global-ranking {min-width:640px;table-layout:auto}
+.global-ranking th:nth-child(n) {width:auto}
+.global-ranking td:last-child {color:inherit;font-weight:normal}
+.global-ranking td:nth-child(7) {color:#ffcf5a;font-weight:bold}

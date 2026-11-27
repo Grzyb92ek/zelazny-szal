@@ -141,7 +141,10 @@ assert(state.phase==="result"&&state.round===finishedRound&&visible("combat")&&v
 nextRound();
 assert(state.round===finishedRound+1&&state.phase==="main"&&!state.rerolled,"next round resets reroll normally");
 state.wins=15;state.round=16;state.level=5;
-state.phase="dead";finishScore();finishScore();assert(getRanks().length===1&&getRanks()[0].score===1825,"save once");retry();assert(state.phase==="name"&&$("nickname").value==="Crom"&&!state.location&&!visible("gameScreen")&&!visible("town")&&state.levelQuest==="available"&&visible("emptyQuestLog"),"retry");
+const queuedScores=[];
+queueGlobalScore=entry=>queuedScores.push(entry);
+state.phase="dead";finishScore();finishScore();assert(getRanks().length===1&&getRanks()[0].score===1825,"save once");
+assert(queuedScores.length===1&&queuedScores[0].score===1825&&queuedScores[0].uncommon===5,"submit the same score automatically once");retry();assert(state.phase==="name"&&$("nickname").value==="Crom"&&!state.location&&!visible("gameScreen")&&!visible("town")&&state.levelQuest==="available"&&visible("emptyQuestLog"),"retry");
 $("nickname").value="<img>";confirmName();state.phase="dead";state.wins=1;finishScore();showRanking();assert($("rankingRows").innerHTML.includes("&lt;img&gt;"),"escape");
 return "PASS: initial, shop, cumulative speed, purse, score, ranking, retry, location transitions, guards and quest rewards";
 })();

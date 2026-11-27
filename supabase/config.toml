@@ -1,0 +1,4 @@
+project_id = "zelazny-szal"
+
+[functions.global-ranking]
+verify_jwt = false
