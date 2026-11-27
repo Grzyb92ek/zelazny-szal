@@ -193,3 +193,14 @@ main[hidden] {display:none}
   background-repeat:no-repeat;
   image-rendering:pixelated;
 }
+
+.item-icon {
+  width:48px;
+  height:48px;
+  image-rendering:pixelated;
+  object-fit:contain;
+  vertical-align:middle;
+}
+@media(max-width:767px) {
+  .item-icon {width:32px;height:32px}
+}
