@@ -1,5 +1,4 @@
 const art={
-hero:'<path d="M2 0h4v1H2zM1 1h6v1H1z" fill="#7b4b2c"/><path d="M2 2h4v2H2z" fill="#dfb28b"/><path d="M2 2h1v1H2zM5 2h1v1H5z" fill="#2b2018"/><path d="M3 3h2v1H3zM2 4h4v1H2z" fill="#b36a3c"/><path d="M1 5h6v2H1z" fill="#7b3d22"/><path d="M3 5h2v2H3z" fill="#b02f2f"/><path d="M2 7h1v1H2zM5 7h1v1H5z" fill="#6e6e6e"/>',
 bat:'<path d="M0 1h1v1h1v1h1v1h2V3h1V2h1V1h1v5H6V5H5v2H3V5H2v1H0z" fill="#70617e"/><path d="M3 2h1v1h1V2h1v3H5v1H3V5H2V3h1z" fill="#352a40"/><path d="M3 4h1v1H3zM5 4h1v1H5z" fill="#f3a645"/>',
 monkey:'<path d="M2 1h4v1h1v3H6v2H5v1H4V7H3v1H2V5H1V2h1zM7 5h1v3H6V7h1z" fill="#87512f"/><path d="M2 2h4v3H2zM3 5h2v2H3z" fill="#d5a579"/><path d="M2 3h1v1H2zM5 3h1v1H5zM3 4h2v1H3z" fill="#392920"/>',
 boar:'<path d="M1 2h4v1h2v1h1v3H6v1H5V6H3v2H2V6H0V3h1z" fill="#805c44"/><path d="M2 1h1v2H2zM4 1h1v2H4z" fill="#49352b"/><path d="M6 5h2v2H6z" fill="#b98a70"/><path d="M5 4h1v1H5z" fill="#211914"/><path d="M5 6h1v1H5zM7 4h1v1H7z" fill="#e9d8b5"/>',
