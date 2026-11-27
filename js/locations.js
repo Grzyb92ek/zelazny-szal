@@ -22,9 +22,11 @@ function canChangeLocation() {
 }
 
 function renderLocationLinks() {
+  const canNavigate = canChangeLocation();
+  $("claimQuestReward").disabled = !canNavigate;
   for (const [id, location] of Object.entries(locations)) {
     for (const buttonId of Object.values(location.exits)) {
-      $(buttonId).classList.toggle("hidden", id !== state.location || !canChangeLocation());
+      $(buttonId).classList.toggle("hidden", id !== state.location || !canNavigate);
     }
   }
 }
@@ -39,6 +41,7 @@ function renderLocation() {
   $("gameHud").classList.toggle("hidden", screenId !== "gameScreen");
   $("menuPanel").hidden = state.location !== "menu";
   $("arenaPanel").hidden = !onArena;
+  $(onArena ? "arenaQuestLog" : "menuQuestLog").appendChild($("questLog"));
   $("consumables").disabled = !onArena || state.phase !== "main";
   renderLocationLinks();
 }

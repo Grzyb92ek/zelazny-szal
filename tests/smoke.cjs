@@ -8,7 +8,7 @@ for(const icon of icons){
   assertFile.equal(data[25],6,"RGBA icon "+icon);
 }
 const nodes=new Map(),mem=new Map();
-const node=id=>{if(!nodes.has(id)){const classes=new Set();nodes.set(id,{innerHTML:"",textContent:"",value:"",style:{},classList:{add:name=>classes.add(name),remove:name=>classes.delete(name),contains:name=>classes.has(name),toggle:(name,force)=>force?classes.add(name):classes.delete(name)},appendChild(){},replaceChildren(...children){this.children=children},remove(){},setAttribute(name,value){this[name]=value},showModal(){this.open=true},close(){this.open=false},focus(){}})}return nodes.get(id)};
+const node=id=>{if(!nodes.has(id)){const classes=new Set();nodes.set(id,{innerHTML:"",textContent:"",value:"",style:{},classList:{add:name=>classes.add(name),remove:name=>classes.delete(name),contains:name=>classes.has(name),toggle:(name,force)=>force?classes.add(name):classes.delete(name)},appendChild(child){child.parentNode=this},replaceChildren(...children){this.children=children},remove(){},setAttribute(name,value){this[name]=value},showModal(){this.open=true},close(){this.open=false},focus(){}})}return nodes.get(id)};
 const storage={getItem:k=>mem.has(k)?mem.get(k):null,setItem:(k,v)=>mem.set(k,v)};
 const doc={getElementById:node,createElement:()=>({style:{},setAttribute(name,value){this[name]=value},remove(){}})};
 
@@ -20,7 +20,7 @@ assert(state.phase==="main"&&state.hp===120&&state.gold===20,"start");
 const visible=id=>!$(id).hidden&&!$(id).classList.contains("hidden");
 assert(state.location==="menu"&&visible("gameScreen")&&visible("menuPanel")&&!visible("arenaPanel"),"start in menu");
 assert(visible("gameHud")&&$("stats").innerHTML&&$("gear").innerHTML&&$("consumables").disabled,"menu shows stats and equipment");
-assert(!visible("questEntry")&&visible("emptyQuestLog"),"quest log starts empty");
+assert(!visible("questEntry")&&visible("emptyQuestLog")&&$("questLog").parentNode===$("menuQuestLog"),"quest log starts empty in main menu");
 $("enterTown").onclick();
 assert(state.location==="town"&&visible("town")&&!visible("gameScreen")&&!visible("gameHud"),"enter town directly from menu");
 $("acceptQuest").onclick();
@@ -105,6 +105,7 @@ for (const enemy of enemies.flat()) {
   assert(sprite.className==="enemy-sprite"&&sprite.style.backgroundPosition===spriteCells[enemy.art],"correct sprite for "+enemy.name);
 }
 const battle=fight();
+assert($("claimQuestReward").disabled,"quest claim is disabled during combat");
 assert($("enemyArt").children[0].style.backgroundPosition===spriteCells.peasant,"select sprite for current opponent");
 
 assert(!$("playerArt").classList.contains("is-attacking"),"combat starts with idle sprite");
@@ -121,10 +122,17 @@ assert(state.location==="arena","block exit during level choice");
 pickUpgrade(0);
 assert(state.phase==="result"&&visible("arenaToMenu"),"allow exit after level choice");
 const finishedRound=state.round;
-$("arenaToMenu").onclick();
-assert($("questStatus").textContent==="Quest ukończony"&&visible("claimQuestReward"),"completed quest is claimable in menu");
+assert($("questLog").parentNode===$("arenaQuestLog"),"adventure uses the same quest log");
+assert($("questStatus").textContent==="Quest ukończony"&&visible("claimQuestReward")&&!$("claimQuestReward").disabled,"completed quest is claimable from the fight result");
+const goldBeforeLevelClaim=state.gold;
+state.phase="level";
+$("claimQuestReward").onclick();
+assert(state.gold===goldBeforeLevelClaim,"cannot claim while choosing a level upgrade");
+state.phase="result";
 const goldBeforeClaim=state.gold;
 $("claimQuestReward").onclick();
+$("arenaToMenu").onclick();
+assert($("questLog").parentNode===$("menuQuestLog"),"quest log returns to main menu");
 $("claimQuestReward").onclick();
 assert(state.gold===goldBeforeClaim+10&&$("hudGold").textContent===state.gold&&$("shopGold").textContent===state.gold+" zł","award ten gold exactly once and refresh gold displays");
 assert($("questStatus").textContent==="Nagroda odebrana"&&!visible("claimQuestReward"),"show claimed status");
