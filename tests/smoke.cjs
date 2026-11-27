@@ -1,7 +1,7 @@
 const fs=require("node:fs"),path=require("node:path");const root=path.resolve(__dirname,"..");const html=fs.readFileSync(path.join(root,"index.html"),"utf8");const scripts=[...html.matchAll(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g)].map(m=>fs.readFileSync(path.join(root,m[1]),"utf8")).join("\n");
 const assertFile=require("node:assert/strict");
 const icons=fs.readdirSync(path.join(root,"assets/items")).filter(name=>name.endsWith(".png"));
-assertFile.equal(icons.length,24);
+assertFile.equal(icons.length,36);
 for(const icon of icons){
   const data=fs.readFileSync(path.join(root,"assets/items",icon));
   assertFile.equal(data.toString("ascii",1,4),"PNG");
@@ -12,7 +12,7 @@ const node=id=>{if(!nodes.has(id)){const classes=new Set();nodes.set(id,{innerHT
 const storage={getItem:k=>mem.has(k)?mem.get(k):null,setItem:(k,v)=>mem.set(k,v)};
 const doc={getElementById:node,createElement:()=>({style:{},setAttribute(name,value){this[name]=value},remove(){}})};
 
-const test=new Function("document","window","setTimeout","clearTimeout","localStorage",scripts+"\n"+`\nreturn (async()=>{
+const test=new Function("document","window","setTimeout","clearTimeout","localStorage","icons",scripts+"\n"+`\nreturn (async()=>{
 function assert(v,m){if(!v)throw Error(m)}
 assert(state.phase==="name"&&baseItems.length===18&&enemies.flat().length===6,"initial");
 $("nickname").value="Crom";confirmName();startGame();pickPassive(0);
@@ -41,7 +41,10 @@ $("enterAdventure").onclick();
 assert(state.location==="arena"&&visible("arenaPanel")&&!visible("menuPanel")&&visible("gameHud")&&!$("consumables").disabled&&$("gameScreen")["aria-label"]==="Przygoda","enter adventure directly");
 assert(visible("arenaToMenu"),"show adventure return button");
 const axe=baseItems[0], dagger=baseItems[1];
-assert(itemIcon(dagger)===dagger.icon,"keep emoji when no matching graphic");
+const itemImages=[...baseItems,healthPotion].map(item=>item.image);
+assert(new Set(itemImages).size===19&&itemImages.every(image=>icons.includes(image)),"all 19 items have distinct PNG files");
+assert(itemIcon(dagger).includes("assets/items/dagger.png"),"render the new dagger graphic");
+assert(itemIcon({icon:"🗡️"})==="🗡️","keep emoji fallback for items without a PNG");
 assert(itemIcon(axe).includes("assets/items/iron_axe.png"),"render matched item as PNG");
 assert(itemIcon(promote(axe))===itemIcon(axe),"upgrading preserves item graphic");
 state.offers=[axe,{...healthPotion}];
@@ -134,4 +137,4 @@ state.phase="dead";finishScore();finishScore();assert(getRanks().length===1&&get
 $("nickname").value="<img>";confirmName();state.phase="dead";state.wins=1;finishScore();showRanking();assert($("rankingRows").innerHTML.includes("&lt;img&gt;"),"escape");
 return "PASS: initial, shop, cumulative speed, purse, score, ranking, retry, location transitions, guards and quest rewards";
 })();
-`);test(doc,{scrollTo(){}},callback=>{queueMicrotask(callback);return 0},()=>{},storage).then(console.log).catch(error=>{console.error(error);process.exitCode=1});
+`);test(doc,{scrollTo(){}},callback=>{queueMicrotask(callback);return 0},()=>{},storage,icons).then(console.log).catch(error=>{console.error(error);process.exitCode=1});
