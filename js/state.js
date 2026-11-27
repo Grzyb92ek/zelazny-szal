@@ -1,5 +1,5 @@
 const $=id=>document.getElementById(id);
-function fresh(){return {hp:120,max:120,armor:0,dmg:10,speed:1,crit:5,critD:150,regen:6,gold:20,goldBonus:0,goldCarry:0,round:1,level:1,exp:0,passive:null,bonus:{hp:0,armor:0,dmg:0,crit:0,critD:0,regen:0},choices:[],enemyHp:0,enemy:null,gear:{left:null,right:null,armor:null,helmet:null,amulet:null,trinket:null},cons:0,offers:[],rerolled:false,dead:false,phase:"name",nickname:"",wins:0,scoreSaved:false}}
+function fresh(){return {hp:120,max:120,armor:0,dmg:10,speed:1,crit:5,critD:150,regen:6,gold:20,goldBonus:0,goldCarry:0,round:1,level:1,exp:0,passive:null,bonus:{hp:0,armor:0,dmg:0,crit:0,critD:0,regen:0},choices:[],enemyHp:0,enemy:null,gear:{left:null,right:null,armor:null,helmet:null,amulet:null,trinket:null},cons:0,offers:[],rerolled:false,dead:false,location:null,phase:"name",nickname:"",wins:0,scoreSaved:false}}
 let state=fresh(),battleToken=0,pending=null,noticeTimer=null;
 function num(x){return Number(x.toFixed(2))}
 function equipped(){return [...new Set(Object.values(state.gear).filter(Boolean))]}
