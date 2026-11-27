@@ -23,4 +23,4 @@
 - Zachowuj numer wersji przy drobnych zmianach. Zwiększaj go przy uzgodnionym wydaniu lub na polecenie użytkownika.
 - GitHub jest docelowym źródłem kodu. Wysyłaj zmiany do GitHuba wyłącznie na wyraźne polecenie użytkownika.
 - Publikuj grę wyłącznie na wyraźne polecenie użytkownika i tylko na wskazanej platformie. Pamiętaj, że wysłanie zmian do gałęzi `main` może uruchomić publikację w GitHub Pages.
-- Przy zleconej aktualizacji PlayDrop zachowaj istniejącą grę 80949 i jej adres https://www.playdrop.ai/@grzyb92ek/iron-fury-autobattler. Jeśli zleconej publikacji nie da się wykonać, zgłoś problem.
+- PlayDrop aktualizuj wyłącznie wtedy, gdy użytkownik wprost zleci publikację na PlayDrop. Ogólna prośba o publikację albo wdrożenie na GitHubie nie jest zgodą na PlayDrop. Przy zleconej aktualizacji zachowaj istniejącą grę 80949 i jej adres https://www.playdrop.ai/@grzyb92ek/iron-fury-autobattler. Zgłoś problem, jeśli zleconej publikacji nie da się wykonać.

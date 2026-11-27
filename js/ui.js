@@ -31,9 +31,10 @@ function renderCharacterHP(){
   $("characterHPBar").style.width=100*state.hp/state.max+"%";
 }
 function render(){recalc();renderCharacter();
-$("consumables").disabled=state.location!=="arena"||state.phase!=="main";
-$("gear").innerHTML=Object.entries(state.gear).map(([slot,it])=>'<div id="gear-'+slot+'" class="tile '+(it?.rarity==="uncommon"?"uncommon":"")+'"><div class="slot">'+slots[slot][0]+'</div><div class="pic">'+(it?itemIcon(it):slots[slot][1])+'</div>'+(it?'<strong>'+esc(it.name)+'</strong><span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span><span>'+(it.two?(slot==="right"?"Zajęta przez broń dwuręczną":esc(itemDescription(it))+" · Dwuręczna"):esc(itemDescription(it)))+'</span>':'<span class="empty">Puste</span>')+'</div>').join("");
-$("cons").innerHTML=state.cons?'<div class="item">'+itemIcon(healthPotion)+' '+esc(healthPotion.name)+' x'+state.cons+' <button class="btn" onclick="usePotion()">Użyj ('+healthPotion.heal+' HP)</button></div>':"Brak";
+$("gear").innerHTML=Object.entries(state.gear).map(([slot,it])=>'<div id="gear-'+slot+'" class="tile '+(it?.rarity==="uncommon"?"uncommon":"")+'"><div class="slot">'+slots[slot][0]+'</div><div class="pic">'+(it?itemIcon(it):slots[slot][1])+'</div>'+(it?'<strong>'+esc(it.name)+'</strong><span class="'+(it.rarity==="uncommon"?"green":"small")+'">'+(it.rarity==="uncommon"?"Niepospolity":"Pospolity")+'</span><span>'+(it.two?(slot==="right"?"Zajęta przez broń dwuręczną":esc(itemDescription(it))+" · Dwuręczna"):esc(itemDescription(it)))+'</span>':'<span class="empty">Puste</span>')+
+  (it&&!(it.two&&slot==="right")?'<button type="button" class="btn gear-remove" onclick="unequipItem(\''+slot+'\')">Zdejmij</button>':'')+
+  '</div>').join("");
+renderBackpack();
 $("shopGold").textContent=state.gold+" zł";
 $("shopNotice").textContent="";
 hideEquipmentTooltip();
@@ -97,32 +98,41 @@ function positionEquipmentTooltip(){
   tooltip.style.top=Math.max(gap,Math.min(top,clientHeight-height-gap))+"px";
 }
 
-$("shop").onpointerover=event=>{
-  if(event.pointerType==="touch")return;
-  const card=event.target.closest("[data-offer]");
-  if(!card||card.contains(event.relatedTarget))return;
-  hideEquipmentTooltip();
-  const equippedItems=equipmentForOffer(state.offers[card.dataset.offer]);
-  if(!equippedItems.length)return;
-  equipmentTooltipTimer=setTimeout(()=>{
-    if(state.phase!=="main"||!card.isConnected)return;
-    const tooltip=$("equipmentTooltip");
-    tooltip.innerHTML='<h3>Aktualnie wyposażony</h3>'+equippedItems.map(([slot,item])=>{
-      const uncommon=item.rarity==="uncommon";
-      return '<div class="equipment-tooltip-item"><div class="slot">'+slot+'</div>'+
-        '<strong>'+itemIcon(item)+' '+esc(item.name)+'</strong>'+
-        '<div class="'+(uncommon?"green":"small")+'">'+(uncommon?"Niepospolity":"Pospolity")+'</div>'+
-        '<div>'+esc(itemDescription(item))+'</div></div>';
-    }).join("");
-    equipmentTooltipCard=card;
-    card.setAttribute("aria-describedby","equipmentTooltip");
-    tooltip.classList.remove("hidden");
-    positionEquipmentTooltip();
-  },200);
-};
-$("shop").onpointerout=event=>{
-  const card=event.target.closest("[data-offer]");
-  if(card&&!card.contains(event.relatedTarget))hideEquipmentTooltip();
-};
+function bindItemTooltip(container,selector,title,readItems,enabled){
+  $(container).onpointerover=event=>{
+    if(event.pointerType==="touch")return;
+    const card=event.target.closest(selector);
+    if(!card||card.contains(event.relatedTarget))return;
+    hideEquipmentTooltip();
+    const items=readItems(card);
+    if(!items.length)return;
+    equipmentTooltipTimer=setTimeout(()=>{
+      if(!enabled()||!card.isConnected)return;
+      const tooltip=$("equipmentTooltip");
+      tooltip.innerHTML='<h3>'+title+'</h3>'+items.map(([slot,item])=>{
+        const uncommon=item.rarity==="uncommon";
+        return '<div class="equipment-tooltip-item"><div class="slot">'+slot+'</div>'+
+          '<strong>'+itemIcon(item)+' '+esc(item.name)+'</strong>'+
+          '<div class="'+(uncommon?"green":"small")+'">'+(item.potion?"Użytkowy":uncommon?"Niepospolity":"Pospolity")+'</div>'+
+          '<div>'+esc(itemDescription(item))+'</div></div>';
+      }).join("");
+      equipmentTooltipCard=card;
+      card.setAttribute("aria-describedby","equipmentTooltip");
+      tooltip.classList.remove("hidden");
+      positionEquipmentTooltip();
+    },200);
+  };
+  $(container).onpointerout=event=>{
+    const card=event.target.closest(selector);
+    if(card&&!card.contains(event.relatedTarget))hideEquipmentTooltip();
+  };
+}
+
+bindItemTooltip("shop","[data-offer]","Aktualnie wyposażony",
+  card=>equipmentForOffer(state.offers[card.dataset.offer]),()=>state.phase==="main");
+bindItemTooltip("backpack","[data-backpack-slot]","Plecak",card=>{
+  const entry=state.backpack[card.dataset.backpackSlot];
+  return entry?[[slotLabel(entry.item),entry.item]]:[];
+},()=>Boolean(state.location)&&$("inventoryMenu").hidden);
 window.onscroll=positionEquipmentTooltip;
 window.onresize=positionEquipmentTooltip;

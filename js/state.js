@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
-function fresh(){const profile=classById();return {...classBase(profile),classId:profile.id,max:profile.hp,gold:profile.gold,goldCarry:0,round:1,level:1,exp:0,passive:null,bonus:{hp:0,armor:0,dmg:0,crit:0,critD:0,regen:0},choices:[],enemyHp:0,enemy:null,gear:{left:null,right:null,armor:null,helmet:null,amulet:null,trinket:null},cons:0,offers:[],rerolled:false,dead:false,location:null,questStates:Object.create(null),phase:"name",nickname:"",wins:0,scoreSaved:false}}
+function fresh(){const profile=classById();return {...classBase(profile),classId:profile.id,max:profile.hp,gold:profile.gold,goldCarry:0,round:1,level:1,exp:0,passive:null,bonus:{hp:0,armor:0,dmg:0,crit:0,critD:0,regen:0},choices:[],enemyHp:0,enemy:null,gear:{left:null,right:null,armor:null,helmet:null,amulet:null,trinket:null},backpack:createBackpack(),offers:[],rerolled:false,dead:false,location:null,questStates:Object.create(null),phase:"name",nickname:"",wins:0,scoreSaved:false}}
 let state=fresh(),battleToken=0,pending=null,noticeTimer=null;
 function num(x){return Number(x.toFixed(2))}
 function equipped(){return [...new Set(Object.values(state.gear).filter(Boolean))]}
-function owned(it){return equipped().find(x=>x.id===it.id)}
+function owned(it){if(it.potion)return;return equipped().find(x=>x.id===it.id)??state.backpack.find(entry=>entry?.item.id===it.id)?.item}
 function recalc(){let s=classBase(selectedClass());for(const k in state.bonus)s[k]+=state.bonus[k];for(const it of equipped()){for(const k of Object.keys(s))s[k]+=it[k]||0}state.max=num(s.hp);state.armor=num(s.armor);state.dmg=num(s.dmg);state.speed=Math.max(.25,num(s.speed));state.crit=num(s.crit);state.critD=num(s.critD);state.regen=num(s.regen);state.healOnHit=num(s.healOnHit);state.damageReflect=num(s.damageReflect);state.armorPenetration=num(s.armorPenetration);state.goldBonus=num(s.goldBonus);state.hp=num(Math.min(state.hp,state.max))}

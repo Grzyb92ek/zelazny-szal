@@ -1,4 +1,4 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Żelazny Szał</title><link rel="stylesheet" href="style.css?v=1.7.0"></head><body>
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Żelazny Szał</title><link rel="stylesheet" href="style.css?v=1.7.0&amp;rev=backpack"></head><body>
 <header class="game-header">
   <div class="game-brand"><h1>⚔️ ŻELAZNY SZAŁ</h1><span class="game-version" id="gameVersion" data-version="1.7.0">Wersja 1.7.0</span></div>
   <dl id="gameHud" class="game-hud hidden">
@@ -74,7 +74,7 @@
       <button class="btn hidden" id="arenaToMenu">Wróć do menu głównego</button>
     </div>
   </div>
-  <section class="equipment-panel" aria-labelledby="equipmentTitle"><h3 id="equipmentTitle">Wyposażenie</h3><div id="gear" class="grid gear"></div><h3>Przedmioty użytkowe</h3><fieldset id="consumables" class="consumables" aria-label="Przedmioty użytkowe"><div id="cons"></div></fieldset></section>
+  <section id="equipmentPanel" class="equipment-panel" aria-labelledby="equipmentTitle"><h3 id="equipmentTitle">Wyposażenie</h3><fieldset id="inventoryControls" class="inventory-controls" aria-label="Wyposażenie i plecak"><div id="gear" class="grid gear"></div><h3>Plecak</h3><div id="backpack" class="grid backpack"></div><p id="backpackNotice" class="small backpack-notice" role="status"></p></fieldset></section>
 </main>
 <div id="nameSelect"><div class="overlay-box"><h1>Witaj, wojowniku!</h1><form id="nameForm"><label for="nickname">Podaj pseudonim gracza</label><input id="nickname" class="name-input" maxlength="24" required placeholder="Twój pseudonim" autocomplete="nickname"><button class="btn wide" type="submit">Dalej</button></form><button class="btn wide" id="startRanking">🏆 Ranking</button><p class="small" id="nameBest"></p><p class="small">Ranking osobisty jest zapisywany w tej przeglądarce. Pseudonim i wynik ukończonej gry pojawią się publicznie w rankingu globalnym.</p></div></div><div id="rankingSelect" class="hidden"><div class="overlay-box" id="rankingBox">
 <h1>🏆 Ranking</h1>
@@ -99,6 +99,7 @@
 </div>
 <button class="btn wide" id="closeRanking">Wróć</button>
 </div></div><div id="classSelect" class="hidden"><div class="overlay-box"><h1>Wybierz postać</h1><div class="small">Dostępne klasy</div><label id="classPicker" hidden>Klasa <select id="classChoice"></select></label><div class="class-card" id="classCard" role="button" tabindex="0"><div id="classChoiceArt" class="pixel-portrait barbarian-portrait" aria-hidden="true"></div><div><div class="class-name" id="classChoiceName">Barbarzyńca</div><div class="small" id="classDescription">Mocny wojownik walczący wręcz. Wysokie obrażenia i prosty styl gry.</div></div></div><button class="btn wide" id="startGame">Wybierz barbarzyńcę</button><button class="btn wide" id="changeName">Zmień pseudonim</button></div></div><div id="passiveSelect" class="hidden"><div class="overlay-box"><h1>Wybierz pasywną zdolność</h1><div class="small" id="passiveIntro">Barbarzyńca · jedna zdolność na całą rozgrywkę</div><div id="passiveChoices"></div></div></div><div id="handSelect" class="hidden"><div class="overlay-box"><h3 id="handTitle"></h3><p class="small" id="handHint"></p><div id="handChoices" class="grid"></div><button class="btn wide" id="cancelHand">Anuluj</button></div></div><div id="levelSelect" class="hidden"><div class="overlay-box"><h1>⚔️ GRATULACJE!</h1><h2 id="levelTitle"></h2><p>Wybierz jedno trwałe rozwinięcie.</p><p id="questCompletionNotice" class="gold" hidden>Quest ukończony</p><div id="levelChoices"></div></div></div><div id="upgradeNotice" class="hidden" role="status"></div>
+<div id="inventoryMenu" class="inventory-menu" aria-label="Opcje przedmiotu" hidden><button type="button" class="btn" id="inventoryUse"></button><button type="button" class="btn" id="inventorySell"></button></div>
 <div id="equipmentTooltip" class="equipment-tooltip hidden" role="tooltip"></div>
 <dialog id="questBoard" class="overlay-box" aria-labelledby="questBoardTitle">
   <h2 id="questBoardTitle">Tablica ogłoszeń</h2>
@@ -118,13 +119,14 @@
 <script src="js/enemies.js?v=1.7.0"></script>
 <script src="js/classes.js?v=1.7.0"></script>
 <script src="js/art.js?v=1.7.0"></script>
-<script src="js/state.js?v=1.7.0"></script>
+<script src="js/inventory.js?v=1.7.0"></script>
+<script src="js/state.js?v=1.7.0&amp;rev=backpack"></script>
 <script src="js/ranking.js?v=1.7.0"></script>
 <script src="js/global-ranking.js?v=1.7.0"></script>
-<script src="js/shop.js?v=1.7.0"></script>
+<script src="js/shop.js?v=1.7.0&amp;rev=backpack"></script>
 <script src="js/progression.js?v=1.7.0"></script>
-<script src="js/combat.js?v=1.7.0"></script>
+<script src="js/combat.js?v=1.7.0&amp;rev=backpack"></script>
 <script src="js/quests.js?v=1.7.0"></script>
-<script src="js/ui.js?v=1.7.0"></script>
-<script src="js/locations.js?v=1.7.0"></script>
-<script src="js/game.js?v=1.7.0"></script></body></html>
+<script src="js/ui.js?v=1.7.0&amp;rev=backpack"></script>
+<script src="js/locations.js?v=1.7.0&amp;rev=backpack"></script>
+<script src="js/game.js?v=1.7.0&amp;rev=backpack"></script></body></html>

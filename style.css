@@ -40,7 +40,17 @@
 .game-layout .gear .tile {min-height:74px;padding:8px;gap:3px}
 .game-layout .log {max-height:clamp(88px,17vh,180px)}
 .game-layout .summary {grid-template-columns:repeat(3,minmax(0,1fr))}
-.consumables {min-inline-size:0;margin:0;padding:0;border:0}
+.inventory-controls {min-inline-size:0;margin:0;padding:0;border:0}
+.backpack .tile {min-height:72px;align-items:center;justify-content:center;text-align:center}
+.backpack-item {width:100%;color:inherit;font:inherit;cursor:pointer;touch-action:manipulation;-webkit-touch-callout:none;user-select:none}
+.backpack-item:disabled,.gear-remove:disabled {cursor:default;opacity:.6}
+.backpack-empty {border-style:dashed;background:transparent}
+.backpack-notice {margin:6px 0 0;color:#ffa99b}
+.backpack-notice:empty {display:none}
+.gear-remove {font-size:12px;margin:0;padding:4px 6px}
+.inventory-menu {position:fixed;z-index:25;background:#241d18;border:1px solid #6b523d;border-radius:8px;padding:6px;box-shadow:0 4px 14px #0009}
+.inventory-menu .btn {display:block;width:100%;margin:0;text-align:left}
+.inventory-menu .btn + .btn {margin-top:5px}
 .btn:disabled {cursor:default}
 @media(max-width:1023px) {
   body {max-width:680px;margin:auto;padding:0 12px 12px}

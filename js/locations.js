@@ -24,6 +24,7 @@ function canChangeLocation() {
 function renderLocationLinks() {
   const canNavigate = canChangeLocation();
   $("claimQuestReward").disabled = !canNavigate;
+  syncInventoryAccess();
   renderExtraQuests(worldCatalog.quests.slice(1), false);
   for (const [id, location] of Object.entries(locations)) {
     for (const [destination, buttonId] of Object.entries(location.exits)) {
@@ -43,7 +44,9 @@ function renderLocation() {
   $("menuPanel").hidden = state.location !== "menu";
   $("arenaPanel").hidden = !onArena;
   $(onArena ? "arenaQuestLog" : "menuQuestLog").appendChild($("questLog"));
-  $("consumables").disabled = !onArena || state.phase !== "main";
+  const equipment = $("equipmentPanel");
+  const parent = $(state.location==="town"?"town":"gameScreen");
+  if (equipment.parentNode!==parent) parent.appendChild(equipment);
   renderLocationLinks();
 }
 
@@ -52,6 +55,8 @@ function changeLocation(destination) {
   if (!canChangeLocation() || !activeLocation(destination) || !(from ? Object.hasOwn(from.exits, destination) : destination === "menu")) return;
   const location = locations[destination];
   hideEquipmentTooltip();
+  closeInventoryMenu();
+  cancelInventoryPress();
   state.location = destination;
   renderLocation();
   window.scrollTo(0, 0);
