@@ -2,22 +2,17 @@ const locations = {
   menu: {
     screenId: "gameScreen",
     focusId: "menuTitle",
-    exits: { map: "openWorldMap" }
-  },
-  map: {
-    screenId: "worldMap",
-    focusId: "worldMapTitle",
-    exits: { arena: "enterArena", town: "enterTown", menu: "mapToMenu" }
+    exits: { arena: "enterAdventure", town: "enterTown" }
   },
   town: {
     screenId: "town",
     focusId: "townTitle",
-    exits: { map: "townToMap" }
+    exits: { menu: "townToMenu" }
   },
   arena: {
     screenId: "gameScreen",
     focusId: "gameScreen",
-    exits: { menu: "arenaToMenu", map: "arenaToMap" }
+    exits: { menu: "arenaToMenu" }
   }
 };
 
@@ -40,7 +35,7 @@ function renderLocation() {
   for (const id of new Set(Object.values(locations).map(location => location.screenId))) {
     $(id).hidden = id !== screenId;
   }
-  $("gameScreen").setAttribute("aria-label", onArena ? "Arena" : "Menu główne");
+  $("gameScreen").setAttribute("aria-label", onArena ? "Przygoda" : "Menu główne");
   $("gameHud").classList.toggle("hidden", screenId !== "gameScreen");
   $("menuPanel").hidden = state.location !== "menu";
   $("arenaPanel").hidden = !onArena;

@@ -83,11 +83,32 @@
   text-shadow:0 2px 3px #000,0 0 6px #360909;
 }
 
-.world-map {max-width:520px;margin:24px auto}
-#menuTitle,#worldMapTitle {margin:0;color:#e3b36b}
-.map-locations {list-style:none;padding:0;margin:0}
-.arena-navigation {display:flex;flex-wrap:wrap;gap:8px}
-.arena-navigation .btn {margin-top:12px}
+.town-screen {max-width:520px;margin:24px auto}
+#menuTitle {margin:0;color:#e3b36b}
+.location-cards {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin:12px 0;
+}
+.location-cards .location-card {
+  display:grid;
+  place-content:center;
+  justify-items:center;
+  gap:4px;
+  min-height:88px;
+  margin:0;
+  background:#342c25;
+  border:1px solid #8e4c25;
+}
+.location-card span {font-size:22px}
+.location-card small {font-size:12px}
+.location-card:enabled:hover {border-color:#e0a34c}
+@media(max-width:480px) {
+  .location-cards {grid-template-columns:1fr}
+  .location-cards .location-card {min-height:56px}
+}
+#arenaToMenu {margin-top:12px}
 main[hidden] {display:none}
 
 #townTitle,#questBoardTitle {margin:0;color:#e3b36b}

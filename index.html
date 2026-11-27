@@ -1,6 +1,6 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Żelazny Szał</title><link rel="stylesheet" href="style.css?v=1.4.1"></head><body>
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Żelazny Szał</title><link rel="stylesheet" href="style.css?v=1.5.0"></head><body>
 <header class="game-header">
-  <div class="game-brand"><h1>⚔️ ŻELAZNY SZAŁ</h1><span class="game-version">Wersja 1.4.1</span></div>
+  <div class="game-brand"><h1>⚔️ ŻELAZNY SZAŁ</h1><span class="game-version">Wersja 1.5.0</span></div>
   <dl id="gameHud" class="game-hud hidden">
     <div><dt>Runda</dt><dd id="round"></dd></div>
     <div><dt>Złoto</dt><dd id="hudGold" class="gold"></dd></div>
@@ -8,25 +8,14 @@
     <div><dt>Punktacja</dt><dd id="hudScore"></dd></div>
   </dl>
 </header>
-<main id="worldMap" class="world-map" hidden aria-labelledby="worldMapTitle">
-  <section>
-    <h2 id="worldMapTitle" tabindex="-1">Mapa świata</h2>
-    <ul class="map-locations">
-      <li><button class="btn wide" id="enterArena"><span aria-hidden="true">⚔️</span> Arena</button></li>
-      <li><button class="btn wide" id="enterTown"><span aria-hidden="true">🏙️</span> Miasto</button></li>
-      <li><button class="btn wide" disabled><span aria-hidden="true">🏝️</span> Plaża i dżungla — niedostępne</button></li>
-    </ul>
-    <button class="btn" id="mapToMenu">Wróć do menu głównego</button>
-  </section>
-</main>
-<main id="town" class="world-map" hidden aria-labelledby="townTitle">
+<main id="town" class="town-screen" hidden aria-labelledby="townTitle">
   <section>
     <h2 id="townTitle" tabindex="-1">Miasto</h2>
     <button class="btn notice-board-button" id="openQuestBoard" aria-haspopup="dialog">
       <span class="notice-board-art" aria-hidden="true"><span></span><span></span><span></span></span>
       Tablica ogłoszeń
     </button>
-    <button class="btn" id="townToMap">Wróć do mapy świata</button>
+    <button class="btn" id="townToMenu">Wróć do menu głównego</button>
   </section>
 </main>
 <main id="gameScreen" class="game-layout" hidden aria-label="Menu główne" tabindex="-1">
@@ -48,7 +37,11 @@
   <div class="center-panel">
     <section id="menuPanel" hidden aria-labelledby="menuTitle">
       <h2 id="menuTitle" tabindex="-1">Menu główne</h2>
-      <button class="btn" id="openWorldMap">Mapa świata</button>
+      <nav class="location-cards" aria-label="Lokacje">
+        <button class="btn location-card" id="enterAdventure"><span aria-hidden="true">⚔️</span> Przygoda</button>
+        <button class="btn location-card" id="enterTown"><span aria-hidden="true">🏘️</span> Miasto</button>
+        <button class="btn location-card" disabled><span aria-hidden="true">🏝️</span> Plaża i dżungla <small>Niedostępna</small></button>
+      </nav>
       <h3>Quest log</h3>
       <p id="emptyQuestLog">Brak aktualnych zadań.</p>
       <div id="questEntry" class="item" hidden>
@@ -70,10 +63,7 @@
       <div id="shop" class="grid shop"></div></section>
     </div>
     <div id="combat" class="hidden"><section><h3 id="battleTitle"></h3><div class="battlefield"><div class="fighter"><div class="avatar" id="playerArt"></div><strong>Barbarzyńca</strong><div class="bar"><div class="fill" id="playerBar"></div></div><span id="playerHP"></span><div class="small" id="playerDamage"></div><div class="small" id="battlePassive"></div></div><div class="fighter enemy"><div class="avatar" id="enemyArt"></div><strong id="enemyName"></strong><div class="bar"><div class="fill" id="enemyBar"></div></div><span id="enemyHP"></span><div class="small" id="enemyDamage"></div><div class="small" id="enemyAbility"></div></div></div></section><section><h3 id="outcome"></h3><div id="finalScore" class="hidden"><div class="score-big" id="scoreValue"></div><p id="scoreDetails"></p><p class="gold" id="scoreMessage"></p><button class="btn wide" id="endRanking">🏆 Ranking osobisty</button></div><div class="summary" id="report"></div><h3>Przebieg walki</h3><div class="log" id="battleText" role="log"></div><button class="btn wide hidden" id="continue">Kontynuuj</button><button class="btn wide hidden" id="retry">Spróbuj ponownie</button></section></div>
-      <nav class="arena-navigation" aria-label="Powrót z areny">
-        <button class="btn hidden" id="arenaToMenu">Wróć do menu głównego</button>
-        <button class="btn hidden" id="arenaToMap">Wróć do mapy świata</button>
-      </nav>
+      <button class="btn hidden" id="arenaToMenu">Wróć do menu głównego</button>
     </div>
   </div>
   <section class="equipment-panel" aria-labelledby="equipmentTitle"><h3 id="equipmentTitle">Wyposażenie</h3><div id="gear" class="grid gear"></div><h3>Przedmioty użytkowe</h3><fieldset id="consumables" class="consumables" aria-label="Przedmioty użytkowe"><div id="cons"></div></fieldset></section>
@@ -91,16 +81,16 @@
   <form method="dialog"><button class="btn" autofocus>Zamknij</button></form>
 </dialog>
 <!-- Classic scripts share the same scope; preserve this loading order. -->
-<script src="js/items.js?v=1.4.1"></script>
-<script src="js/enemies.js?v=1.4.1"></script>
-<script src="js/classes.js?v=1.4.1"></script>
-<script src="js/art.js?v=1.4.1"></script>
-<script src="js/state.js?v=1.4.1"></script>
-<script src="js/ranking.js?v=1.4.1"></script>
-<script src="js/shop.js?v=1.4.1"></script>
-<script src="js/progression.js?v=1.4.1"></script>
-<script src="js/combat.js?v=1.4.1"></script>
-<script src="js/quests.js?v=1.4.1"></script>
-<script src="js/ui.js?v=1.4.1"></script>
-<script src="js/locations.js?v=1.4.1"></script>
-<script src="js/game.js?v=1.4.1"></script></body></html>
+<script src="js/items.js?v=1.5.0"></script>
+<script src="js/enemies.js?v=1.5.0"></script>
+<script src="js/classes.js?v=1.5.0"></script>
+<script src="js/art.js?v=1.5.0"></script>
+<script src="js/state.js?v=1.5.0"></script>
+<script src="js/ranking.js?v=1.5.0"></script>
+<script src="js/shop.js?v=1.5.0"></script>
+<script src="js/progression.js?v=1.5.0"></script>
+<script src="js/combat.js?v=1.5.0"></script>
+<script src="js/quests.js?v=1.5.0"></script>
+<script src="js/ui.js?v=1.5.0"></script>
+<script src="js/locations.js?v=1.5.0"></script>
+<script src="js/game.js?v=1.5.0"></script></body></html>
