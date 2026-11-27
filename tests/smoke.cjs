@@ -1,8 +1,8 @@
 const fs=require("node:fs"),path=require("node:path");const root=path.resolve(__dirname,"..");const html=fs.readFileSync(path.join(root,"index.html"),"utf8");const scripts=[...html.matchAll(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g)].map(m=>fs.readFileSync(path.join(root,m[1]),"utf8")).join("\n");
 const nodes=new Map(),mem=new Map();
-const node=id=>{if(!nodes.has(id)){const classes=new Set();nodes.set(id,{innerHTML:"",textContent:"",value:"",style:{},classList:{add:name=>classes.add(name),remove:name=>classes.delete(name),contains:name=>classes.has(name),toggle:(name,force)=>force?classes.add(name):classes.delete(name)},appendChild(){},replaceChildren(){},remove(){},setAttribute(name,value){this[name]=value},showModal(){this.open=true},close(){this.open=false},focus(){}})}return nodes.get(id)};
+const node=id=>{if(!nodes.has(id)){const classes=new Set();nodes.set(id,{innerHTML:"",textContent:"",value:"",style:{},classList:{add:name=>classes.add(name),remove:name=>classes.delete(name),contains:name=>classes.has(name),toggle:(name,force)=>force?classes.add(name):classes.delete(name)},appendChild(){},replaceChildren(...children){this.children=children},remove(){},setAttribute(name,value){this[name]=value},showModal(){this.open=true},close(){this.open=false},focus(){}})}return nodes.get(id)};
 const storage={getItem:k=>mem.has(k)?mem.get(k):null,setItem:(k,v)=>mem.set(k,v)};
-const doc={getElementById:node,createElement:()=>({style:{},remove(){}})};
+const doc={getElementById:node,createElement:()=>({style:{},setAttribute(name,value){this[name]=value},remove(){}})};
 
 const test=new Function("document","window","setTimeout","clearTimeout","localStorage",scripts+"\n"+`\nreturn (async()=>{
 function assert(v,m){if(!v)throw Error(m)}
@@ -75,12 +75,21 @@ state.enemy={name:"Test",art:"peasant",hp:1,damage:1,armor:0,gold:0};
 state.enemyHp=1;
 state.level=2;
 state.exp=xpNeed()-xpReward();
+const spriteCells={bat:"0 0",goblin:"50% 0",monkey:"100% 0",peasant:"0 100%",boar:"50% 100%",bull:"100% 100%"};
+for (const enemy of enemies.flat()) {
+  renderEnemySprite(enemy.art);
+  const [sprite]=$("enemyArt").children;
+  assert(sprite.className==="enemy-sprite"&&sprite.style.backgroundPosition===spriteCells[enemy.art],"correct sprite for "+enemy.name);
+}
 const battle=fight();
+assert($("enemyArt").children[0].style.backgroundPosition===spriteCells.peasant,"select sprite for current opponent");
+
 assert(!$("playerArt").classList.contains("is-attacking"),"combat starts with idle sprite");
 assert(state.phase==="combat"&&!visible("arenaToMenu"),"hide exit during combat");
 $("arenaToMenu").onclick();
 assert(state.location==="arena","block exit during combat");
 await battle;
+assert($("enemyArt").classList.contains("hit"),"enemy sprite receives the hit effect");
 assert($("playerArt").classList.contains("is-attacking"),"player attack triggers barbarian sprite animation");
 assert(state.phase==="level"&&!visible("arenaToMenu"),"hide exit during level choice");
 assert(state.level===3&&visible("questCompletionNotice"),"notify completion on reaching level three");

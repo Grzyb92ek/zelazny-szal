@@ -1,8 +1,19 @@
-const art={
-bat:'<path d="M0 1h1v1h1v1h1v1h2V3h1V2h1V1h1v5H6V5H5v2H3V5H2v1H0z" fill="#70617e"/><path d="M3 2h1v1h1V2h1v3H5v1H3V5H2V3h1z" fill="#352a40"/><path d="M3 4h1v1H3zM5 4h1v1H5z" fill="#f3a645"/>',
-monkey:'<path d="M2 1h4v1h1v3H6v2H5v1H4V7H3v1H2V5H1V2h1zM7 5h1v3H6V7h1z" fill="#87512f"/><path d="M2 2h4v3H2zM3 5h2v2H3z" fill="#d5a579"/><path d="M2 3h1v1H2zM5 3h1v1H5zM3 4h2v1H3z" fill="#392920"/>',
-boar:'<path d="M1 2h4v1h2v1h1v3H6v1H5V6H3v2H2V6H0V3h1z" fill="#805c44"/><path d="M2 1h1v2H2zM4 1h1v2H4z" fill="#49352b"/><path d="M6 5h2v2H6z" fill="#b98a70"/><path d="M5 4h1v1H5z" fill="#211914"/><path d="M5 6h1v1H5zM7 4h1v1H7z" fill="#e9d8b5"/>',
-goblin:'<path d="M2 1h4v1h2v2H6v2H2V4H0V2h2z" fill="#20558f"/><path d="M2 2h4v3H2zM1 2h1v1H1zM6 2h1v1H6z" fill="#51a9d9"/><path d="M2 3h1v1H2zM5 3h1v1H5z" fill="#e9d45b"/><path d="M3 4h2v1H3z" fill="#17324d"/><path d="M2 6h4v1H2z" fill="#9a6b3d"/><path d="M2 7h1v1H2zM5 7h1v1H5z" fill="#3b5c8c"/>',
-peasant:'<path d="M1 1h4v1h1v1H0V2h1z" fill="#c5a65d"/><path d="M2 3h3v2H2z" fill="#dca77c"/><path d="M2 3h1v1H2zM4 3h1v1H4z" fill="#372820"/><path d="M1 5h5v2H1z" fill="#78834a"/><path d="M2 7h1v1H2zM4 7h1v1H4z" fill="#65462d"/><path d="M7 2h1v6H7z" fill="#a57942"/><path d="M6 0h1v2H6zM7 0h1v2H7zM6 2h2v1H6z" fill="#c1c5c7"/>',
-bull:'<path d="M0 0h1v2h2v1H1V2H0zM7 0h1v2H7v1H5V2h2z" fill="#e8d6b3"/><path d="M2 1h4v1h1v2H6v3H2V4H1V2h1z" fill="#80513a"/><path d="M2 3h1v1H2zM5 3h1v1H5z" fill="#f6bc66"/><path d="M3 5h2v2H3z" fill="#bb8b72"/><path d="M3 6h1v1H3zM5 6h1v1H5z" fill="#392820"/><path d="M1 7h2v1H1zM5 7h2v1H5z" fill="#4d3327"/>'};
-function svg(k){return '<svg viewBox="0 0 8 8" role="img" aria-label="'+k+'"><rect width="8" height="8" fill="#211b17"/>'+art[k]+'</svg>'}
+// Each frame is one cell of the 3-column, 2-row enemy sprite sheet.
+const enemySpritePositions = {
+  bat: "0 0",
+  goblin: "50% 0",
+  monkey: "100% 0",
+  peasant: "0 100%",
+  boar: "50% 100%",
+  bull: "100% 100%"
+};
+
+function renderEnemySprite(art) {
+  const sprite = document.createElement("span");
+  sprite.className = "enemy-sprite";
+  sprite.setAttribute("aria-hidden", "true");
+  sprite.style.backgroundPosition = enemySpritePositions[art];
+  const avatar = $("enemyArt");
+  avatar.classList.remove("hit");
+  avatar.replaceChildren(sprite);
+}
