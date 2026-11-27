@@ -1,15 +1,18 @@
 const locations = {
-  camp: {
-    screenId: "camp",
-    focusId: "campTitle",
-    name: "Obóz podróżnika",
-    description: "Ognisko daje chwilę wytchnienia. Stąd możesz wyruszyć na arenę i zmierzyć się z kolejnym przeciwnikiem.",
-    exits: { arena: "enterArena" }
+  menu: {
+    screenId: "gameScreen",
+    focusId: "menuTitle",
+    exits: { map: "openWorldMap" }
+  },
+  map: {
+    screenId: "worldMap",
+    focusId: "worldMapTitle",
+    exits: { arena: "enterArena", menu: "mapToMenu" }
   },
   arena: {
-    screenId: "arena",
-    focusId: "arena",
-    exits: { camp: "returnToCamp" }
+    screenId: "gameScreen",
+    focusId: "gameScreen",
+    exits: { menu: "arenaToMenu", map: "arenaToMap" }
   }
 };
 
@@ -27,16 +30,21 @@ function renderLocationLinks() {
 }
 
 function renderLocation() {
-  for (const [id, location] of Object.entries(locations)) {
-    $(location.screenId).hidden = id !== state.location;
-  }
-  $("arenaHud").classList.toggle("hidden", state.location !== "arena");
+  const screenId = locations[state.location]?.screenId;
+  const onArena = state.location === "arena";
+  $("worldMap").hidden = screenId !== "worldMap";
+  $("gameScreen").hidden = screenId !== "gameScreen";
+  $("gameScreen").setAttribute("aria-label", onArena ? "Arena" : "Menu główne");
+  $("gameHud").classList.toggle("hidden", screenId !== "gameScreen");
+  $("menuPanel").hidden = state.location !== "menu";
+  $("arenaPanel").hidden = !onArena;
+  $("consumables").disabled = !onArena || state.phase !== "main";
   renderLocationLinks();
 }
 
 function changeLocation(destination) {
   const from = locations[state.location];
-  if (!canChangeLocation() || !(from ? Object.hasOwn(from.exits, destination) : destination === "camp")) return;
+  if (!canChangeLocation() || !(from ? Object.hasOwn(from.exits, destination) : destination === "menu")) return;
   const location = locations[destination];
   hideEquipmentTooltip();
   state.location = destination;
@@ -46,8 +54,6 @@ function changeLocation(destination) {
 }
 
 function initLocations() {
-  $("campTitle").textContent = locations.camp.name;
-  $("campDescription").textContent = locations.camp.description;
   for (const location of Object.values(locations)) {
     for (const [destination, buttonId] of Object.entries(location.exits)) {
       $(buttonId).onclick = () => changeLocation(destination);
