@@ -204,3 +204,5 @@ main[hidden] {display:none}
 @media(max-width:767px) {
   .item-icon {width:32px;height:32px}
 }
+
+.game-layout #arenaQuestLog {margin-top:12px}

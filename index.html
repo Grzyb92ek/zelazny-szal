@@ -1,6 +1,6 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Żelazny Szał</title><link rel="stylesheet" href="style.css?v=1.5.4"></head><body>
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Żelazny Szał</title><link rel="stylesheet" href="style.css?v=1.5.5"></head><body>
 <header class="game-header">
-  <div class="game-brand"><h1>⚔️ ŻELAZNY SZAŁ</h1><span class="game-version">Wersja 1.5.4</span></div>
+  <div class="game-brand"><h1>⚔️ ŻELAZNY SZAŁ</h1><span class="game-version">Wersja 1.5.5</span></div>
   <dl id="gameHud" class="game-hud hidden">
     <div><dt>Runda</dt><dd id="round"></dd></div>
     <div><dt>Złoto</dt><dd id="hudGold" class="gold"></dd></div>
@@ -42,13 +42,17 @@
         <button class="btn location-card" id="enterTown"><span aria-hidden="true">🏘️</span> Miasto</button>
         <button class="btn location-card" disabled><span aria-hidden="true">🏝️</span> Plaża i dżungla <small>Niedostępna</small></button>
       </nav>
-      <h3>Quest log</h3>
-      <p id="emptyQuestLog">Brak aktualnych zadań.</p>
-      <div id="questEntry" class="item" hidden>
-        <strong id="loggedQuestTitle"></strong>
-        <div id="loggedQuestReward"></div>
-        <div id="questStatus" role="status"></div>
-        <button class="btn" id="claimQuestReward" hidden>Odbierz nagrody</button>
+      <div id="menuQuestLog">
+        <div id="questLog">
+          <h3 id="questLogTitle">Quest log</h3>
+          <p id="emptyQuestLog">Brak aktualnych zadań.</p>
+          <div id="questEntry" class="item" hidden>
+            <strong id="loggedQuestTitle"></strong>
+            <div id="loggedQuestReward"></div>
+            <div id="questStatus" role="status"></div>
+            <button class="btn" id="claimQuestReward" hidden>Odbierz nagrody</button>
+          </div>
+        </div>
       </div>
     </section>
     <div id="arenaPanel" hidden>
@@ -63,6 +67,7 @@
       <div id="shop" class="grid shop"></div></section>
     </div>
     <div id="combat" class="hidden"><section><h3 id="battleTitle"></h3><div class="battlefield"><div class="fighter"><div class="avatar" id="playerArt"><span class="barbarian-sprite" aria-hidden="true"></span></div><strong>Barbarzyńca</strong><div class="bar"><div class="fill" id="playerBar"></div></div><span id="playerHP"></span><div class="small" id="playerDamage"></div><div class="small" id="battlePassive"></div></div><div class="fighter enemy"><div class="avatar" id="enemyArt"></div><strong id="enemyName"></strong><div class="bar"><div class="fill" id="enemyBar"></div></div><span id="enemyHP"></span><div class="small" id="enemyDamage"></div><div class="small" id="enemyAbility"></div></div></div></section><section><h3 id="outcome"></h3><div id="finalScore" class="hidden"><div class="score-big" id="scoreValue"></div><p id="scoreDetails"></p><p class="gold" id="scoreMessage"></p><button class="btn wide" id="endRanking">🏆 Ranking osobisty</button></div><div class="summary" id="report"></div><h3>Przebieg walki</h3><div class="log" id="battleText" role="log"></div><button class="btn wide hidden" id="continue">Kontynuuj</button><button class="btn wide hidden" id="retry">Spróbuj ponownie</button></section></div>
+      <section id="arenaQuestLog" aria-labelledby="questLogTitle"></section>
       <button class="btn hidden" id="arenaToMenu">Wróć do menu głównego</button>
     </div>
   </div>
@@ -81,16 +86,16 @@
   <form method="dialog"><button class="btn" autofocus>Zamknij</button></form>
 </dialog>
 <!-- Classic scripts share the same scope; preserve this loading order. -->
-<script src="js/items.js?v=1.5.4"></script>
-<script src="js/enemies.js?v=1.5.4"></script>
-<script src="js/classes.js?v=1.5.4"></script>
-<script src="js/art.js?v=1.5.4"></script>
-<script src="js/state.js?v=1.5.4"></script>
-<script src="js/ranking.js?v=1.5.4"></script>
-<script src="js/shop.js?v=1.5.4"></script>
-<script src="js/progression.js?v=1.5.4"></script>
-<script src="js/combat.js?v=1.5.4"></script>
-<script src="js/quests.js?v=1.5.4"></script>
-<script src="js/ui.js?v=1.5.4"></script>
-<script src="js/locations.js?v=1.5.4"></script>
-<script src="js/game.js?v=1.5.4"></script></body></html>
+<script src="js/items.js?v=1.5.5"></script>
+<script src="js/enemies.js?v=1.5.5"></script>
+<script src="js/classes.js?v=1.5.5"></script>
+<script src="js/art.js?v=1.5.5"></script>
+<script src="js/state.js?v=1.5.5"></script>
+<script src="js/ranking.js?v=1.5.5"></script>
+<script src="js/shop.js?v=1.5.5"></script>
+<script src="js/progression.js?v=1.5.5"></script>
+<script src="js/combat.js?v=1.5.5"></script>
+<script src="js/quests.js?v=1.5.5"></script>
+<script src="js/ui.js?v=1.5.5"></script>
+<script src="js/locations.js?v=1.5.5"></script>
+<script src="js/game.js?v=1.5.5"></script></body></html>

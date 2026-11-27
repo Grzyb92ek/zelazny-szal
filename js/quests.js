@@ -27,7 +27,8 @@ function initQuests() {
     renderQuests();
   };
   $("claimQuestReward").onclick = () => {
-    if (state.location !== "menu" || state.levelQuest !== "accepted" || state.level < levelQuest.level) return;
+    if (state.location !== "menu" && state.location !== "arena") return;
+    if (!canChangeLocation() || state.levelQuest !== "accepted" || state.level < levelQuest.level) return;
     state.levelQuest = "claimed";
     state.gold += levelQuest.gold;
     render();
