@@ -177,7 +177,7 @@ async function fight(){
   $("playerArt").classList.remove("is-attacking","hit");
   renderEnemySprite(enemy.art,enemy.image);
   $("enemyName").textContent=enemy.name;
-  $("enemyAbility").textContent=enemy.ability||"";
+  $("enemyAbility").textContent=[enemy.ability,sourceEffectDescription("enemy",enemy.id)].filter(Boolean).join(" ");
   $("battleSubclass").textContent=selectedSubclass()?.name??"";
   window.scrollTo(0,0);
   try{

@@ -85,36 +85,182 @@ function effectSourceIssue(effect,kind,potion,skill){
   return "";
 }
 
-function generateEffectDescription(effect){
-  const target=effect.target==="self"?"właściciel":"przeciwnik";
-  const value=effectHasValue(effect.action)?(multiplierEffect(effect.action)?" ×":" ")+(effect.value??0)+(percentEffect(effect.action)?"%":""):"";
-  const stat=effectUsesStat(effect.action)?" "+(effectStats[effect.stat]??""):"";
-  const duration=timedEffect(effect.action)?" · "+(effect.duration==="turns"?effect.turns+" tur":effectDurations[effect.duration]??""):"";
-  const stack=timedEffect(effect.action)&&effect.stack?(effect.maxStacks?" · do "+effect.maxStacks+" kumulacji":" · kumuluje się"):"";
-  const condition=effect.conditionTarget?" · HP "+(effect.conditionTarget==="self"?"właściciela":"przeciwnika")+" "+
-    (effect.conditionAbove?(effect.conditionStrict?">":"≥"):(effect.conditionStrict?"<":"≤"))+" "+
-    effect.conditionValue+(effect.conditionUnit==="percent"?"%":"")+(effect.conditionCrossing?" po przekroczeniu progu":""):"";
-  const frequency=(effect.chance??100)<100?" · szansa "+effect.chance+"%":"";
-  const interval=(effect.every??1)>1?" · co "+effect.every+" zdarzenia":"";
-  const limit=effect.limit?" · do "+effect.limit+" aktywacji na walkę":"";
-  const extra=(effect.criticalOnly?" · tylko krytyk":"")+(effect.nonCriticalOnly?" · tylko zwykłe trafienia":"")+
-    (effect.hitOnly?" · tylko trafienia":"")+(effect.clearOn?" · reset: "+effectTriggers[effect.clearOn].toLowerCase():"")+
-    (effect.totalCap?" · łączny limit "+effect.totalCap+(effect.duration==="permanent"?" na rozgrywkę":" na walkę"):"")+
-    (effect.nonLethalOnly?" · tylko nieśmiertelne obrażenia":"")+(effect.healPercent?" · leczy "+effect.healPercent+"% maks. HP":"")+
-    (effect.runLimit?" · do "+effect.runLimit+" aktywacji na rozgrywkę":"")+
-    (effect.runCap?" · do "+effect.runCap+" HP na rozgrywkę":"");
-  return (effectTriggers[effect.trigger]??"Zdarzenie")+" — "+(effectActions[effect.action]??"Akcja")+stat+value+
-    " · cel: "+target+duration+stack+condition+frequency+interval+limit+extra+".";
+const skillNumber=new Intl.NumberFormat("pl-PL",{maximumFractionDigits:6,useGrouping:false});
+const skillAmount=value=>skillNumber.format(value);
+const skillStatNames={dmg:"obrażenia",healOnHit:"przywracanie zdrowia po trafieniu",
+  crit:"szansa na trafienie krytyczne",critD:"obrażenia krytyczne",
+  hp:"maksymalne HP",attackDamageBonus:"obrażenia zadawane podczas ataku",regen:"leczenie po zwycięstwie",
+  goldBonus:"złoto po zwycięstwie",damageReflect:"odbicie obrażeń"};
+const skillStatName=key=>skillStatNames[key]??effectStats[key]?.replace(/ \(%\)$/,"").toLocaleLowerCase("pl")??"statystyka";
+const skillUnit=key=>["hp","healOnHit","regen"].includes(key)?" HP":
+  ["crit","critD","damageReduction","critFloor","attackDamageBonus"].includes(key)?"%":"";
+const skillSentence=text=>text.charAt(0).toLocaleUpperCase("pl")+text.slice(1)+".";
+
+function describeStatChange(key,value){
+  if(key==="regen")return "Regeneracja "+skillAmount(value);
+  return skillSentence(skillStatName(key)+" "+(value>0?"+":"")+skillAmount(value)+skillUnit(key));
 }
 
-function advancedEffectSummary(effect){
-  if(effect.action==="healPercent"&&effect.trigger==="onDamaged"&&effect.hitOnly&&effect.target==="self"&&
-      (effect.every??1)===1&&(effect.chance??100)===100&&!effect.conditionTarget&&!effect.limit&&!effect.runLimit&&
-      !effect.criticalOnly&&!effect.nonCriticalOnly&&!effect.nonLethalOnly){
-    return "Przywraca "+effect.value+"% maks. HP po otrzymaniu trafienia.";
-  }
-  return generateEffectDescription(effect);
+function joinDescriptions(parts){
+  return parts.map((part,index)=>index<parts.length-1&&!/[.!?]$/.test(part)?part+".":part).join(" ");
 }
+
+const effectPlayerTriggers={
+  onHit:"po trafieniu",onCrit:"przy trafieniu krytycznym",onDamaged:"po otrzymaniu obrażeń",
+  onKill:"po pokonaniu przeciwnika",onBattleStart:"na początku walki",onVictory:"po zwycięstwie",
+  onAttack:"przy ataku",onDodge:"po uniku",onHeal:"po odzyskaniu zdrowia",
+  onTurnStart:"na początku własnej tury",onTurnEnd:"na końcu własnej tury",
+  onBattleEnd:"po walce",onUse:"po użyciu przedmiotu",beforeIncomingAttack:"gdy przeciwnik atakuje",
+  beforeAttackDamage:"przy trafieniu",beforeHitHeal:"po trafieniu",onHitHealOverflow:"",
+  beforeReflect:"",afterAttackRoll:"po próbie ataku",whileCondition:""
+};
+const effectStatObject={
+  dmg:"obrażenia",armor:"pancerz",speed:"szybkość ataku",crit:"szansę na trafienie krytyczne",
+  critD:"obrażenia krytyczne",critFloor:"minimalną szansę na trafienie krytyczne",
+  damageReflect:"odbicie obrażeń",damageReduction:"redukcję otrzymywanych obrażeń",goldBonus:"złoto po zwycięstwie",
+  healOnHit:"leczenie po trafieniu",regen:"leczenie po zwycięstwie",armorPenetration:"przebicie pancerza",
+  attackDamageBonus:"obrażenia zadawane podczas ataku"
+};
+const effectNoun=(value,one,few,many)=>value===1?one:Number.isInteger(value)&&value%10>=2&&value%10<=4&&
+  (value%100<12||value%100>14)?few:many;
+
+function generateEffectDescription(effect){
+  const value=skillAmount(effect.value);
+  const percent=skillAmount((effect.value-1)*100);
+  const threshold=skillAmount(effect.conditionValue)+(effect.conditionUnit==="percent"?"% HP":" HP");
+  const comparison=effect.conditionAbove?(effect.conditionStrict?"powyżej ":"od "):
+    (effect.conditionStrict?"poniżej ":"przy najwyżej ");
+  const condition=effect.conditionTarget?comparison+threshold+(effect.conditionTarget==="opponent"?" przeciwnika":""):"";
+  const turnWord=effectNoun(effect.turns,"turę","tury","tur");
+  const duration=effect.duration==="battle"?" do końca walki":effect.duration==="turns"?
+    " przez "+skillAmount(effect.turns)+" "+turnWord:effect.duration==="permanent"?" do końca rozgrywki":"";
+  const basic=!effect.every&&!effect.limit&&!effect.runLimit&&(effect.chance??100)===100&&
+    !effect.criticalOnly&&!effect.nonCriticalOnly&&!effect.clearOn;
+  if(basic&&!effect.nonLethalOnly&&effect.conditionTarget&&effect.conditionStrict&&!effect.conditionAbove){
+    if(effect.action==="heal"&&effect.trigger==="onCrit"&&effect.target==="self"&&effect.conditionTarget==="self")
+      return skillSentence(condition+" trafienia krytyczne przywracają dodatkowe "+value+" HP");
+    if(effect.action==="scaleAttack"&&effect.trigger==="onAttack"&&effect.value>=1&&!effect.stack){
+      if(effect.conditionTarget==="opponent")return "Zadajesz "+percent+"% więcej obrażeń przeciwnikom posiadającym mniej niż "+threshold+".";
+      return skillSentence(condition+" zadawane obrażenia zwiększają się o "+percent+"%");
+    }
+    if(effect.action==="conditionalStat"&&effect.stat==="speed"&&effect.value>=0)
+      return skillSentence(condition+" szybkość ataku zwiększa się o "+value);
+  }
+  if(basic&&effect.action==="stat"&&effect.stat==="dmg"&&effect.trigger==="onDamaged"&&effect.hitOnly&&
+      effect.target==="self"&&effect.stack&&effect.maxStacks===0&&!condition&&!effect.healPercent&&!effect.nonLethalOnly&&effect.value>0){
+    const cap=effect.totalCap?" Maksymalnie +"+skillAmount(effect.totalCap)+" obrażeń.":"";
+    return "Każde otrzymane trafienie zwiększa obrażenia o "+value+duration+"."+cap;
+  }
+  if(effect.action==="stat"&&effect.stat==="attackDamageBonus"&&effect.trigger==="onDamaged"&&effect.healPercent&&
+      effect.target==="self"&&effect.conditionCrossing&&effect.conditionStrict&&!effect.conditionAbove&&effect.nonLethalOnly&&
+      effect.limit===1&&!effect.runLimit&&!effect.stack&&!effect.every&&(effect.chance??100)===100&&
+      !effect.criticalOnly&&!effect.nonCriticalOnly&&!effect.hitOnly&&!effect.clearOn&&effect.value>0){
+    return "Raz na walkę, po spadku poniżej "+threshold+", odzyskujesz "+skillAmount(effect.healPercent)+
+      "% maksymalnego HP i zadajesz "+value+"% więcej obrażeń"+duration+". Nie zapobiega śmierci.";
+  }
+  const repeated=effect.every>1;
+  const ordinal=["","","drugie","trzecie","czwarte","piąte","szóste","siódme","ósme","dziewiąte","dziesiąte"][effect.every]??
+    (skillAmount(effect.every)+".");
+  const hit=effect.criticalOnly?"trafienie krytyczne":effect.nonCriticalOnly?"zwykłe trafienie":"trafienie";
+  const regularHit=effect.trigger==="onHit"||effect.trigger==="beforeAttackDamage"||effect.trigger==="onCrit";
+  const receivedHit=effect.trigger==="onDamaged"&&effect.hitOnly;
+  const hitName=effect.trigger==="onCrit"?"trafienie krytyczne":receivedHit?"otrzymane "+hit:hit;
+  const perHit=(repeated?"co "+ordinal:"każde")+" "+hitName;
+  const simple=!effect.conditionTarget&&!effect.limit&&!effect.runLimit&&!effect.criticalOnly&&!effect.nonCriticalOnly&&
+    !effect.nonLethalOnly&&!effect.clearOn&&(effect.chance??100)===100;
+  const chance=skillAmount(effect.chance);
+  if(simple&&receivedHit&&effect.target==="self"&&effect.action==="healPercent"){
+    if(repeated)return skillSentence(perHit+" przywraca "+value+"% maksymalnego HP");
+    return "Przywraca "+value+"% maks. HP po otrzymaniu trafienia.";
+  }
+  if(simple&&effect.action==="skipAttack"&&effect.trigger==="onHit"&&effect.target==="opponent")
+    return skillSentence(perHit+" ogłusza przeciwnika, powodując pominięcie jego następnego ataku");
+  if(simple&&effect.action==="reduceArmor"&&effect.trigger==="onHit"&&effect.target==="opponent"&&
+      effect.stack&&!effect.maxStacks)
+    return skillSentence(perHit+" zmniejsza pancerz przeciwnika o "+value+duration);
+  if(simple&&effect.action==="maxHpGain"&&effect.trigger==="onVictory"&&!repeated&&effect.target==="self")
+    return "Każde zwycięstwo zwiększa maksymalne HP o "+value+"."+(
+      effect.runCap?" Maksymalnie +"+skillAmount(effect.runCap)+" HP na rozgrywkę.":" Premia zostaje do końca rozgrywki.");
+  if(effect.action==="dodge"&&effect.trigger==="beforeIncomingAttack"&&!effect.conditionTarget&&!effect.limit&&!effect.runLimit&&!repeated)
+    return (effect.chance??100)===100?"Unika ataku.":chance+"% szansy na unik.";
+  if(effect.action==="extraAttack"&&(receivedHit||effect.trigger==="onHit")&&effect.chance<100&&
+      !effect.conditionTarget&&!effect.limit&&!effect.runLimit&&!repeated&&!effect.criticalOnly&&!effect.nonCriticalOnly&&!effect.nonLethalOnly)
+    return chance+"% szansy na "+(receivedHit?"kontratak po otrzymaniu trafienia.":"dodatkowy atak po trafieniu.");
+  if(effect.action==="scaleReward"&&effect.trigger==="onVictory"&&effect.value===2&&effect.chance<100&&
+      effect.target==="self"&&!effect.conditionTarget&&!effect.limit&&!effect.runLimit&&!repeated)
+    return chance+"% szansy na podwojenie złota zdobytego za zwycięstwo.";
+  if(basic&&effect.action==="scaleHitHeal"&&effect.value===2&&condition)
+    return skillSentence(condition+" przywracanie zdrowia po trafieniu jest podwojone");
+  if(basic&&effect.action==="scaleReflect"&&effect.value===2&&condition)
+    return skillSentence(condition+" odbijasz dwa razy więcej obrażeń");
+  if(simple&&effect.action==="extraAttack"&&effect.trigger==="onAttack"&&repeated)
+    return "Co "+(["","","drugi","trzeci","czwarty","piąty","szósty","siódmy","ósmy","dziewiąty","dziesiąty"][effect.every]??
+      (skillAmount(effect.every)+"."))+" atak wykonujesz dodatkowy atak.";
+  if(effect.action==="stat"&&effect.trigger==="onDodge"&&effect.stat==="critFloor"&&effect.value===100&&
+      effect.clearOn==="afterAttackRoll"&&effect.target==="self"&&!effect.conditionTarget&&!effect.limit&&!effect.runLimit&&
+      !repeated&&(effect.chance??100)===100&&effect.duration==="battle")
+    return "Po uniku następny atak, jeśli trafi, zada obrażenia krytyczne.";
+  if(effect.action==="ignoreArmor"&&effect.criticalOnly&&!effect.conditionTarget&&!repeated&&!effect.limit&&
+      !effect.runLimit&&(effect.chance??100)===100)
+    return "Przy trafieniu krytycznym ignoruje pancerz przeciwnika.";
+  if(effect.trigger==="onAttack"&&!condition&&effect.action==="scaleAttack"&&effect.value===2&&effect.limit===1&&
+      !effect.runLimit&&!repeated&&(effect.chance??100)===100)
+    return "Pierwszy atak w walce zadaje podwójne obrażenia.";
+  const actions={
+    heal:(effect.target==="opponent"?"przywracasz przeciwnikowi ":"odzyskujesz ")+value+" HP",
+    healPercent:(effect.target==="opponent"?"przywracasz przeciwnikowi ":"odzyskujesz ")+value+"% maks. HP",
+    damage:"zadajesz "+(effect.target==="opponent"?"przeciwnikowi ":"sobie ")+"dodatkowe obrażenia ("+value+"), które omijają pancerz",
+    damageFromStat:"zadajesz dodatkowe obrażenia omijające pancerz, równe "+value+"% "+
+      (effect.stat==="armorPenetration"?"twojego przebicia pancerza":"wartości statystyki „"+skillStatName(effect.stat)+"”"),
+    extraAttack:"wykonujesz dodatkowy atak",skipAttack:effect.target==="opponent"?"przeciwnik pomija atak":"pomijasz atak",
+    reduceArmor:"obniżasz pancerz "+(effect.target==="opponent"?"przeciwnika":"własny")+" o "+value,
+    gold:"przyznajesz "+value+" zł "+(effect.target==="opponent"?"przeciwnikowi":"sobie"),
+    survive:"pozostajesz przy życiu z 1 HP"+(effect.healPercent?", a potem odzyskujesz "+skillAmount(effect.healPercent)+"% maks. HP":""),
+    scaleAttack:"mnożysz obrażenia ataku przez "+value,scaleHitDamage:"mnożysz obrażenia po uwzględnieniu pancerza przez "+value,
+    ignoreArmor:"ignorujesz pancerz",scaleHitHeal:"mnożysz leczenie po trafieniu przez "+value,
+    overflowDamage:"zamieniasz nadmiar leczenia po trafieniu w obrażenia omijające pancerz"+(effect.value===1?" w stosunku 1 do 1":" z mnożnikiem "+value),
+    reflectFromArmor:"odbijasz dodatkowe obrażenia równe "+value+"% twojego pancerza",
+    scaleReflect:"mnożysz odbicie obrażeń przez "+value,dodge:"unikasz ataku",
+    maxHpGain:"zwiększasz maksymalne HP o "+value+" do końca rozgrywki",
+    scaleReward:"mnożysz nagrodę w złocie przez "+value
+  };
+  const unit=value=>["crit","critD","critFloor","damageReduction","attackDamageBonus"].includes(effect.stat)?
+    " "+effectNoun(value,"punkt procentowy","punkty procentowe","punktów procentowych"):skillUnit(effect.stat);
+  const statChange=(effect.value<0?"zmniejsza":"zwiększa")+" "+(effectStatObject[effect.stat]??"statystykę")+
+    (effect.target==="opponent"?" przeciwnika":"")+" o "+skillAmount(Math.abs(effect.value))+unit(Math.abs(effect.value));
+  const action=actions[effect.action]??statChange;
+  const trigger=effect.conditionCrossing?"":effect.action==="survive"?(effect.hitOnly?"po śmiertelnym trafieniu":"po otrzymaniu śmiertelnych obrażeń"):
+    receivedHit?"po otrzymaniu "+(effect.criticalOnly?"trafienia krytycznego":
+    effect.nonCriticalOnly?"zwykłego trafienia":"trafienia"):regularHit&&(effect.criticalOnly||effect.nonCriticalOnly)?
+    "przy "+(effect.criticalOnly?"trafieniu krytycznym":"zwykłym trafieniu"):effectPlayerTriggers[effect.trigger];
+  const opening=effect.conditionCrossing?"po spadku "+condition:condition;
+  const prefix=[opening,trigger].filter(Boolean).join(", ");
+  const heal=effect.action==="stat"&&effect.healPercent?" i odzyskujesz "+skillAmount(effect.healPercent)+"% maks. HP":"";
+  const notes=[
+    effect.chance<100?"Szansa zadziałania to "+skillAmount(effect.chance)+"%":null,
+    effect.criticalOnly&&!regularHit&&!receivedHit?"Działa tylko przy trafieniach krytycznych":null,
+    effect.nonCriticalOnly&&!regularHit&&!receivedHit?"Działa tylko przy zwykłych trafieniach":null,
+    effect.limit===1?"Działa raz na walkę":effect.limit?"Działa do "+skillAmount(effect.limit)+" razy na walkę":null,
+    effect.runLimit===1?"Działa raz na rozgrywkę":effect.runLimit?"Działa do "+skillAmount(effect.runLimit)+" razy na rozgrywkę":null,
+    effect.stack?(effect.maxStacks?"Efekt kumuluje się do "+skillAmount(effect.maxStacks)+" razy":
+      !(regularHit||receivedHit)&&!effect.totalCap?"Premie się sumują":null):null,
+    effect.totalCap?(effect.value<0?"Łączny spadek to najwyżej ":"Łącznie najwyżej +")+skillAmount(effect.totalCap)+unit(effect.totalCap):null,
+    effect.runCap?"Łączny bonus to najwyżej "+skillAmount(effect.runCap)+" HP":null,
+    effect.clearOn?"Premia znika "+effectPlayerTriggers[effect.clearOn]:null,
+    effect.nonLethalOnly?"Nie zapobiega śmierci":null
+  ].filter(Boolean);
+  const lead=(regularHit||receivedHit)&&(repeated||effect.stack)&&!opening?perHit:prefix;
+  const verb=lead===perHit&&actions[effect.action]?effect.action==="scaleHitDamage"?
+    (effect.value>=1?"zadaje "+percent+"% więcej":"zadaje "+skillAmount((1-effect.value)*100)+"% mniej")+" obrażeń po uwzględnieniu pancerza":
+    effect.action==="healPercent"?"przywraca "+(effect.target==="opponent"?"przeciwnikowi ":"")+value+"% maksymalnego HP":
+    effect.action==="heal"?"przywraca "+(effect.target==="opponent"?"przeciwnikowi ":"")+value+" HP":null:null;
+  const phrase=verb||(actions[effect.action]===undefined&&lead!==perHit?statChange.replace(/^zwiększa /,"zwiększasz ").replace(/^zmniejsza /,"zmniejszasz "):action);
+  const start=lead===perHit&&actions[effect.action]&&!verb?prefix:lead;
+  if(repeated&&start!==perHit)notes.unshift("Działa co "+skillAmount(effect.every)+". raz");
+  return [skillSentence((start?start+" ":"")+phrase+heal+duration),...notes.map(skillSentence)].join(" ");
+}
+
+const advancedEffectSummary=generateEffectDescription;
 
 function advancedEffectsFor(rows,kind,sourceId,rarity,wheelId){
   return rows.filter(row=>row.kind===kind&&row.sourceId===sourceId&&row.wheelId===wheelId&&
@@ -126,7 +272,7 @@ function advancedEffectsFor(rows,kind,sourceId,rarity,wheelId){
 }
 
 function effectDisplayText(effect){
-  return [effect.name,effectDisplayDescription(effect)].filter(Boolean).join(" — ");
+  return [effect.name,effectDisplayDescription(effect)].filter(Boolean).join(". ");
 }
 
 function effectDisplayDescription(effect){

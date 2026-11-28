@@ -11,7 +11,7 @@ function rareEffectDetails(item){
   const rarity=itemRarity(item), effects=configuredSourceEffects("item",item.id,rarity);
   const descriptions=effects.map(effect=>{
     const extra=effectDisplayDescription(effect);
-    return '<div class="small item-effect"><b>'+esc(effect.name)+'</b>'+(extra?' — '+esc(extra):'')+'</div>';
+    return '<div class="small item-effect"><b>'+esc(effect.name)+'</b>'+(extra?' '+esc(extra):'')+'</div>';
   });
   if(rarity==="rare"&&item.rareEffectDescription&&!effects.some(effect=>effect.id===item.rareEffectId)){
     descriptions.push('<div class="small rare-effect">Efekt specjalny (nieaktywny): '+esc(item.rareEffectDescription)+'</div>');
@@ -64,13 +64,14 @@ $("shopGold").textContent=state.gold+" zł";
 $("shopNotice").textContent="";
 hideEquipmentTooltip();
 $("shop").innerHTML=state.offers.map((item,i)=>{
-  const price=shopPrice(item),duplicate=shopUpgrade(item),status=slotStatus(item),unaffordable=state.gold<price;
+  const price=shopPrice(item),duplicate=shopUpgrade(item),unaffordable=state.gold<price;
+  const status=[slotStatus(item),...shopOwnershipLabels(item)].filter(Boolean).join(" · ");
   const unavailable=itemRarity(item)==="rare"||Boolean(owned(item,"rare"));
   const buyAction=' onclick="buy('+i+')"';
   return '<div class="tile '+itemRarity(item)+(unaffordable?' tile-unaffordable':'')+'"'+(unaffordable&&!unavailable?buyAction:'')+
     ' data-offer="'+i+'"><strong>'+itemIcon(item)+' '+esc(item.name)+'</strong><div class="slot">Slot: '+slotLabel(item)+
     (status?' · '+status:'')+'</div>'+(!item.potion?itemRarityBadge(item):'')+'<div>'+esc(itemDescription(item))+'</div>'+
-    (duplicate?'<div class="green">Ulepszenie: '+esc(promote(duplicate).desc)+'</div>':'')+
+    rareEffectDetails(item)+(duplicate?'<div class="green">Ulepszenie: '+esc(itemDescription(promote(duplicate)))+'</div>':'')+
     '<div class="price '+(unaffordable?'price-unaffordable':'gold')+'">'+price+' zł</div><button class="btn"'+
     (unaffordable?'':buyAction)+(unavailable?' disabled':'')+'>'+(duplicate?"Ulepsz":"Kup")+'</button></div>';
 }).join("")||"Sklep pusty";

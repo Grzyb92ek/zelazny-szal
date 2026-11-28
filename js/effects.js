@@ -403,7 +403,7 @@ function battleEndEffects(){
 }
 
 function sourceEffectDescription(kind,id,rarity){
-  return configuredSourceEffects(kind,id,rarity).map(effectDisplayText).join(" · ");
+  return configuredSourceEffects(kind,id,rarity).map(effectDisplayText).join(" ");
 }
 
 function effectLayerSummary(side){

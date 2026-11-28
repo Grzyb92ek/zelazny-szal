@@ -74,8 +74,8 @@ const storage = {
 };
 let offline = true, attempts = [];
 const context = vm.createContext({
-  rankingClassName: id=>id,
-  rankingSubclassName: id=>id==="berserk"?"Berserk":id??"—",
+  worldCatalog:{classes:[{id:"barbarian",name:"Barbarzyńca"}]},
+  skillCatalog:{subclasses:[{id:"berserk",name:"Berserk"}]},
   $: id => {if (!nodes.has(id)) nodes.set(id, element()); return nodes.get(id)},
   document: {createElement: element},
   window: {addEventListener: (name, callback) => {events[name] = callback}},
@@ -88,6 +88,7 @@ const context = vm.createContext({
   }
 });
 const run = code => vm.runInContext(code, context);
+run(await readFile(new URL("../js/ranking.js", import.meta.url), "utf8"));
 run(await readFile(new URL("../js/global-ranking.js", import.meta.url), "utf8"));
 await run("flushGlobalScores()");
 run('queueGlobalScore({name:"Crom", subclassId:"berserk", round:1, level:1, wins:0, uncommon:0, score:0})');
@@ -103,8 +104,8 @@ assert.ok(attempts.every(attempt => attempt.run_id === attempts[0].run_id));
 assert.equal(attempts[0].character_subclass,"berserk");
 await run("loadGlobalRanking(globalRankingView)");
 assert.equal(nodes.get("globalRankingRows").children[0].children[1].textContent, entry.nickname);
-assert.equal(nodes.get("globalRankingRows").children[0].children[3].textContent,"—");
-assert.equal(nodes.get("globalRankingRows").children[1].children[3].textContent,"Berserk");
+assert.equal(nodes.get("globalRankingRows").children[0].children[2].textContent,"Barbarzyńca");
+assert.equal(nodes.get("globalRankingRows").children[1].children[2].textContent,"Barbarzyńca – Berserk");
 assert.equal(nodes.get("globalRankingTable").hidden, false);
 run("selectRankingView(false)");
 assert.equal(nodes.get("rankingPersonalPanel").hidden, false);

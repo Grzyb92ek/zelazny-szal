@@ -21,7 +21,7 @@ function renderClassPicker() {
   $("classChoice").value = profile.id;
   $("classPicker").hidden = worldCatalog.classes.length < 2;
   $("classChoiceName").textContent = profile.name;
-  $("classDescription").textContent = [profile.description,sourceEffectDescription("class",profile.id)].filter(Boolean).join(" · ");
+  $("classDescription").textContent = [profile.description,sourceEffectDescription("class",profile.id)].filter(Boolean).join(" ");
   $("startGame").textContent = profile.id === "barbarian" && profile.name === "Barbarzyńca" ? "Wybierz barbarzyńcę" : "Wybierz " + profile.name;
   classImage("classChoiceArt", profile.image);
 }

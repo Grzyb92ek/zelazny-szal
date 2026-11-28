@@ -13,6 +13,7 @@
 
 - Każda nowa uniwersalna statystyka bojowa powinna być domyślnie dostępna dla przedmiotów, klas postaci i przeciwników oraz obsługiwana przez Game Designer Studio.
 - Wszystkie przyszłe efekty specjalne podłączaj do wspólnego systemu zdarzeń. Udostępniaj je w Game Designer Studio dla wszystkich kompatybilnych elementów gry.
+- Opisy mechanik dla graczy pisz krótko i naturalnie po polsku. Korzystaj ze wspólnego generatora i aktualnych wartości. Pomijaj identyfikatory, nazwy pól i techniczny żargon.
 - Efekty specjalne i modyfikatory zaawansowane współdzielą mechaniki, schemat walidacji i formularz Studio. Definicje modyfikatorów zapisuj niezależnie w `data/modifiers.js`, z własnymi parametrami, licznikami i powiązaniem z elementem gry.
 - Definicje podklas, kół i punktów umiejętności zapisuj w `data/skills.js`. Gra i Studio współdzielą reguły i renderer z `js/skill-rules.js` oraz `js/skill-wheel.js`. Zachowuj moduły podklas i odblokowywania umiejętności w `js/subclasses.js` i `js/skills.js`.
 - Połączenia koła definiują wymagania węzłów. Nowe statystyki i efekty podklas oraz umiejętności podłączaj do wspólnych rejestrów, walidacji Studio i panelu efektów postaci.

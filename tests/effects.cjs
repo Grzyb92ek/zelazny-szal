@@ -20,6 +20,25 @@ const test=new Function("document","window","setTimeout","clearTimeout","localSt
 return (async()=>{
 const logs=[];
 addLog=line=>logs.push(line);
+const expectedDescriptions={
+  "laska-croma":"Przy trafieniu krytycznym ignoruje pancerz przeciwnika.",
+  "zywe-korzenie":"Co piąte otrzymane trafienie przywraca 5% maksymalnego HP.",
+  "kontratak":"15% szansy na kontratak po otrzymaniu trafienia.",
+  "rozlupanie":"Każde trafienie zmniejsza pancerz przeciwnika o 1 do końca walki.",
+  "ogluszenie":"Co trzecie trafienie ogłusza przeciwnika, powodując pominięcie jego następnego ataku.",
+  "chciwosc":"20% szansy na podwojenie złota zdobytego za zwycięstwo.",
+  "moc-umarlych":"Każde zwycięstwo zwiększa maksymalne HP o 3. Maksymalnie +30 HP na rozgrywkę.",
+  "przebudzenie-run":"Każde trafienie krytyczne zwiększa obrażenia krytyczne o 5 punktów procentowych do końca walki."
+};
+for(const effect of effectCatalog.effects){
+  const text=generateEffectDescription(effect);
+  assert.ok(text&&text.endsWith("."),effect.id);
+  assert.doesNotMatch(text,/NaN|undefined|cel:|Oczekuje| · /,effect.id);
+  if(expectedDescriptions[effect.id])assert.equal(text,expectedDescriptions[effect.id]);
+}
+const rootsDefinition=effectCatalog.effects.find(effect=>effect.id==="zywe-korzenie");
+assert.equal(generateEffectDescription({...rootsDefinition,every:3,value:7.5}),
+  "Co trzecie otrzymane trafienie przywraca 7,5% maksymalnego HP.");
 const configured=(id,trigger,action,fields={})=>({id,name:id,trigger,action,target:"self",...fields});
 const source=effect=>({effect,key:effect.id,stackKey:effect.id});
 function reset(player=[],enemy=[]){
@@ -293,7 +312,7 @@ function checkAdditionalRareEffects(){
   }
   battleEffects=null;state.gear.trinket=null;recalc();
   assert.equal(battleStat("player","dmg"),state.dmg+10);
-  renderCharacter();assert.ok($("characterEffects").textContent.includes("+10 DMG"));
+  renderCharacter();assert.ok($("characterEffects").textContent.includes("Obrażenia +10."));
   // Lekkość ruchu works with a granted dodge from a compatible class.
   const dodgeSource=configured("test-class-dodge","beforeIncomingAttack","dodge");
   effectCatalog.effects.push(dodgeSource);

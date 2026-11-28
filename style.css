@@ -79,6 +79,9 @@
 .shop-notice {margin:8px 0 0}
 .shop-notice:empty {margin:0}
 .shop .tile-unaffordable {cursor:pointer}
+.shop .shop-equipped,.shop .shop-stored {border-radius:4px;padding:1px 4px;white-space:nowrap}
+.shop .shop-equipped {color:#9effb3;background:#254b30}
+.shop .shop-stored {color:#b9dcff;background:#253f58}
 
 .equipment-tooltip {
   position:fixed;
@@ -237,7 +240,7 @@ main[hidden] {display:none}
 .global-ranking {min-width:640px;table-layout:auto}
 .global-ranking th:nth-child(n) {width:auto}
 .global-ranking td:last-child {color:inherit;font-weight:normal}
-.global-ranking td:nth-child(8) {color:#ffcf5a;font-weight:bold}
+.global-ranking td:nth-child(7) {color:#ffcf5a;font-weight:bold}
 
 .barbarian-portrait.has-class-image,#playerArt.has-class-image .barbarian-sprite::before {background-image:var(--class-image);background-size:contain;background-position:center;clip-path:none}
 #playerArt.has-class-image .barbarian-sprite::before {width:84px;height:84px;animation:none}

@@ -8,12 +8,12 @@ const enemies = [1, 2, 3].map(category => worldCatalog.enemies.filter(enemy =>
 
 function enemyAbilityText(enemy) {
   switch (enemy.skill) {
-    case "lifesteal": return "Wampiryzm: +" + enemy.power + " HP co " + enemy.interval + " własne ataki";
-    case "dodge": return "Zwinność: " + enemy.power + "% szansy na unik";
-    case "extra": return enemy.power + "% szansy na dodatkowy atak";
-    case "pierce": return "Przebicie: ignoruje " + enemyArmorPenetration(enemy) + " pancerza";
-    case "charge": return "Szarża: pierwszy atak ×" + enemy.power;
-    case "thick": return "Gruba skóra: " + enemy.armor + " pancerza";
+    case "lifesteal": return "Odzyskuje " + skillAmount(enemy.power) + " HP co " + skillAmount(enemy.interval) + ". trafienie.";
+    case "dodge": return skillAmount(enemy.power) + "% szansy na unik.";
+    case "extra": return skillAmount(enemy.power) + "% szansy na dodatkowy atak.";
+    case "pierce": return "Ignoruje " + skillAmount(enemyArmorPenetration(enemy)) + " punktów pancerza.";
+    case "charge": return enemy.power===2?"Pierwszy atak zadaje podwójne obrażenia.":"Obrażenia pierwszego ataku są mnożone przez " + skillAmount(enemy.power) + ".";
+    case "thick": return "Gruba skóra zapewnia " + skillAmount(enemy.armor) + " punktów pancerza.";
     default: return "";
   }
 }

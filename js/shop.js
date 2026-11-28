@@ -29,6 +29,12 @@ function syncShopReroll(){
 function slotLabel(it){return it.slot==="weapon"?(it.two?"Dwie ręce":"Jedna ręka"):it.potion?"Przedmiot użytkowy":slots[it.slot][0]}
 function shopUpgrade(item){return itemRarity(item)==="common"?owned(item,"common"):undefined}
 function slotStatus(it){if(it.potion)return "";if(shopUpgrade(it))return '<span class="slot-status upgrade-label">UPGRADE</span>';return emptyEquipmentSlot(it)===undefined?'<span class="slot-status occupied">ZAJĘTE</span>':'<span class="slot-status free">PUSTE</span>'}
+function shopOwnershipLabels(item){
+  const matches=entry=>entry?.id===item.id;
+  const gear=equipped().some(matches)?'<span class="slot-status shop-equipped">UŻYWANY</span>':"";
+  const backpack=state.backpack.some(entry=>matches(entry?.item))?'<span class="slot-status shop-stored">W PLECAKU</span>':"";
+  return [gear,backpack].filter(Boolean);
+}
 function notifyUpgrade(it,keys){
   const n=$("upgradeNotice"),rare=itemRarity(it)==="rare";
   n.classList.toggle("rare",rare);

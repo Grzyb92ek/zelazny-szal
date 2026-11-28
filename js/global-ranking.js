@@ -119,7 +119,7 @@ async function loadGlobalRanking(view) {
       const tr = document.createElement("tr");
       const endedAt = new Date(row.ended_at);
       const date = Number.isNaN(endedAt.getTime()) ? "" : endedAt.toLocaleString("pl-PL");
-      for (const value of [index + 1, row.nickname, rankingClassName(row.character_class), rankingSubclassName(row.character_subclass), row.level, row.round, row.wins, row.score, date, row.game_version]) {
+      for (const value of [index + 1, row.nickname, rankingProfileName(row.character_class,row.character_subclass), row.level, row.round, row.wins, row.score, date, row.game_version]) {
         const td = document.createElement("td");
         td.textContent = String(value);
         tr.appendChild(td);

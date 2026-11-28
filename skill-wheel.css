@@ -23,4 +23,5 @@
 .subclass-choice img {display:block;width:100%;height:min(46vh,350px);object-fit:contain;margin-bottom:8px}
 .subclass-name {color:#f0a97e}
 #skillControls {margin-top:6px}
-#characterEffects div {margin:5px 0}
+#characterEffects > div {margin:7px 0}
+#characterEffects .effect-source {display:block;font-size:11px;color:#c8b79f}
