@@ -11,7 +11,7 @@
 
 ## Dokumentacja
 
-- Przy istotnej zmianie mechaniki zaktualizuj w tym samym zadaniu [GAME_DESIGN.md](GAME_DESIGN.md) oraz odpowiedni wpis w [CHANGELOG.md](CHANGELOG.md). W regułach gry podawaj aktualne wartości i odsyłaj do pliku, w którym są konfigurowane.
+- Po każdej istotnej zmianie mechaniki zaktualizuj w ramach tego samego zadania [GAME_DESIGN.md](GAME_DESIGN.md) oraz odpowiedni wpis w [CHANGELOG.md](CHANGELOG.md). W regułach gry podawaj aktualne wartości i odsyłaj do pliku, w którym są konfigurowane.
 - Uaktualniaj [ROADMAP.md](ROADMAP.md), gdy zmieni się status planu lub funkcja wejdzie do gry. [ART_STYLE.md](ART_STYLE.md) i [LORE.md](LORE.md) aktualizuj przy zmianach grafiki i rzeczywiście ustalonych elementów świata.
 - Opisuj wdrożone funkcje na podstawie kodu i danych. Plany oznaczaj osobno. Zachowuj zwięzłość i uzupełniaj brakujące fakty tylko na podstawie dostępnych źródeł.
 
