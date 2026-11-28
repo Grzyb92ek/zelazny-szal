@@ -9,6 +9,12 @@
 - Wykonuj testy adekwatne do zakresu zmian. Przy małych zadaniach pomiń rozbudowane plany i dokumentację.
 - Po wykonaniu zadania krótko podsumuj zmiany, wynik testów i ewentualne problemy.
 
+## Dokumentacja
+
+- Przy istotnej zmianie mechaniki zaktualizuj w tym samym zadaniu [GAME_DESIGN.md](GAME_DESIGN.md) oraz odpowiedni wpis w [CHANGELOG.md](CHANGELOG.md). W regułach gry podawaj aktualne wartości i odsyłaj do pliku, w którym są konfigurowane.
+- Uaktualniaj [ROADMAP.md](ROADMAP.md), gdy zmieni się status planu lub funkcja wejdzie do gry. [ART_STYLE.md](ART_STYLE.md) i [LORE.md](LORE.md) aktualizuj przy zmianach grafiki i rzeczywiście ustalonych elementów świata.
+- Opisuj wdrożone funkcje na podstawie kodu i danych. Plany oznaczaj osobno. Zachowuj zwięzłość i uzupełniaj brakujące fakty tylko na podstawie dostępnych źródeł.
+
 ## Zasady projektowe
 
 - Każda nowa uniwersalna statystyka bojowa powinna być domyślnie dostępna dla przedmiotów, klas postaci i przeciwników oraz obsługiwana przez Game Designer Studio.
